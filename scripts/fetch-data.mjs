@@ -186,25 +186,32 @@ function parseSource(config, parser, json) {
     }))
   }
   if (parser === 'huiniao') {
-    // 实测结构：{ code: 1, data: { data: { list: ["@{code=26118; day=2026-10-17; one=02; two=09; ...}"] } } }
+    // 实测结构：{ code: 1, data: { data: { list: [{ code, day, one:"02", ..., seven:"12" }] } } }
+    // list 元素为对象（早期曾按 "@{...}" 字符串解析，实测确认是对象）
     const list = json?.data?.data?.list ?? []
-    return list.map((str) => {
-      const fields = {}
-      for (const pair of str.slice(2, -1).split('; ')) {
-        const [k, v] = pair.split('=')
-        fields[k] = v
-      }
-      const nums = [fields.one, fields.two, fields.three, fields.four, fields.five, fields.six, fields.seven]
-        .filter(Boolean)
+    return list.map((item) => {
+      const f = typeof item === 'string' ? parseHuiniaoString(item) : item
+      const nums = [f.one, f.two, f.three, f.four, f.five, f.six, f.seven]
+        .filter((v) => v !== undefined && v !== null && v !== '')
         .map(Number)
       return {
-        drawNo: String(fields.code),
-        date: String(fields.day),
+        drawNo: String(f.code),
+        date: String(f.day).slice(0, 10),
         zones: splitZones(config, nums),
       }
     })
   }
   throw new Error(`未知 parser: ${parser}`)
+}
+
+/** 兼容灰鸟可能的 "@{code=...; day=...}" 字符串形态 */
+function parseHuiniaoString(str) {
+  const f = {}
+  for (const pair of str.replace(/^@?\{|\}$/g, '').split('; ')) {
+    const idx = pair.indexOf('=')
+    if (idx > 0) f[pair.slice(0, idx).trim()] = pair.slice(idx + 1)
+  }
+  return f
 }
 
 /** 按配置各 zones 的 pick 依次切分号码；无序区升序存储 */
