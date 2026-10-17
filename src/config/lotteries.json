@@ -18,6 +18,10 @@
       "fallback": {
         "parser": "huiniao",
         "urlTemplate": "https://api.huiniao.top/interface/home/lotteryHistory?type=ssq&page={pageNo}&limit={pageSize}"
+      },
+      "fallback2": {
+        "parser": "apihz",
+        "urlTemplate": "https://cn.apihz.cn/api/caipiao/shuangseqiu.php?id=10017096&key=5c7faec78fef41b94818f843cdde0288"
       }
     }
   },
@@ -41,6 +45,10 @@
       "fallback": {
         "parser": "huiniao",
         "urlTemplate": "https://api.huiniao.top/interface/home/lotteryHistory?type=dlt&page={pageNo}&limit={pageSize}"
+      },
+      "fallback2": {
+        "parser": "apihz",
+        "urlTemplate": "https://cn.apihz.cn/api/caipiao/daletou.php?id=10017096&key=5c7faec78fef41b94818f843cdde0288"
       }
     }
   },

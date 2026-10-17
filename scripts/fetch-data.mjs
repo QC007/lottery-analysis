@@ -78,10 +78,12 @@ async function syncLottery(config) {
   const fetched = []
   const maxPages = backfill ? MAX_BACKFILL_PAGES : MAX_INCREMENTAL_PAGES
   for (let page = 1; page <= maxPages; page++) {
-    const list = await fetchPage(config, page)
+    const { list, src } = await fetchPage(config, page)
     if (list.length === 0) break
     const fresh = list.filter((d) => !known.has(d.drawNo))
     fetched.push(...fresh)
+    // 单期源（apihz）只抓一页，抓完即停
+    if (src.parser === 'apihz') break
     // 增量模式：本页出现已知期号，说明已追上，无需再翻页
     if (!backfill && fresh.length < list.length) break
     await sleep(PAGE_DELAY_MS)
@@ -137,9 +139,9 @@ async function syncLottery(config) {
   return summary
 }
 
-/** 抓取一页数据（带重试 + fallback 切换），返回统一开奖对象数组 */
+/** 抓取一页数据（带重试 + 多源 fallback），返回 { list, src } */
 async function fetchPage(config, pageNo) {
-  const sources = [config.sources.official, config.sources.fallback].filter((s) => s.urlTemplate)
+  const sources = Object.values(config.sources).filter((s) => s?.urlTemplate)
 
   let lastErr
   for (const src of sources) {
@@ -153,7 +155,7 @@ async function fetchPage(config, pageNo) {
           headers: { 'User-Agent': UA, ...(src.headers ?? {}) },
         })
         if (!res.ok) throw new Error(`HTTP ${res.status}`)
-        return parseSource(config, src.parser, await res.json())
+        return { list: parseSource(config, src.parser, await res.json()), src }
       } catch (err) {
         lastErr = err
         if (attempt < RETRY) await sleep(1000 * attempt)
@@ -164,21 +166,34 @@ async function fetchPage(config, pageNo) {
   throw new Error(`第 ${pageNo} 页抓取失败: ${lastErr.message}`)
 }
 
+/** 期号归一化：7 位彩种若返回 5 位短号（如灰鸟 26118），补 "20" 前缀为 2026118 */
+function normDrawNo(config, drawNo) {
+  const s = String(drawNo)
+  if (config.drawNoPattern.includes('{7}') && s.length === 5) return '20' + s
+  return s
+}
+
+/** 日期归一化：从 "2026-10-17"、"2026-10-17 21:25:00"、"2026-10-15(四)" 中提取 YYYY-MM-DD */
+function normDate(s) {
+  const m = String(s ?? '').match(/\d{4}-\d{2}-\d{2}/)
+  return m ? m[0] : ''
+}
+
 /** 按 parser 类型分发解析 */
 function parseSource(config, parser, json) {
   if (parser === 'sporttery') {
     // 实测结构：{ value: { list: [{ lotteryDrawNum, lotteryDrawTime, lotteryDrawResult: "02 09 21 26 32 06 12" }] } }
     return (json?.value?.list ?? []).map((item) => ({
-      drawNo: String(item.lotteryDrawNum),
-      date: String(item.lotteryDrawTime),
+      drawNo: normDrawNo(config, item.lotteryDrawNum),
+      date: normDate(item.lotteryDrawTime),
       zones: splitZones(config, String(item.lotteryDrawResult).trim().split(/\s+/).map(Number)),
     }))
   }
   if (parser === 'cwl') {
     // 实测结构：{ result: [{ code, date: "2026-10-15(四)", red: "05,21,22,23,28,31", blue: "14" }] }
     return (json?.result ?? []).map((item) => ({
-      drawNo: String(item.code),
-      date: String(item.date).slice(0, 10),
+      drawNo: normDrawNo(config, item.code),
+      date: normDate(item.date),
       zones: splitZones(
         config,
         [...String(item.red).split(','), ...(item.blue ? [item.blue] : [])].map(Number),
@@ -195,11 +210,20 @@ function parseSource(config, parser, json) {
         .filter((v) => v !== undefined && v !== null && v !== '')
         .map(Number)
       return {
-        drawNo: String(f.code),
-        date: String(f.day).slice(0, 10),
+        drawNo: normDrawNo(config, f.code),
+        date: normDate(f.day),
         zones: splitZones(config, nums),
       }
     })
+  }
+  if (parser === 'apihz') {
+    // 实测结构：{ qihao, time, number: "05|21|22|23|28|31|14" }（单期，无分页）
+    const nums = String(json.number).split('|').map(Number)
+    return [{
+      drawNo: normDrawNo(config, json.qihao),
+      date: normDate(json.time),
+      zones: splitZones(config, nums),
+    }]
   }
   throw new Error(`未知 parser: ${parser}`)
 }
