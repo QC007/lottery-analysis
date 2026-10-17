@@ -1,0 +1,112 @@
+{
+  "ssq": {
+    "id": "ssq",
+    "name": "双色球",
+    "issuer": "welfare",
+    "enabled": true,
+    "drawSchedule": "每周二、四、日 21:15",
+    "drawNoPattern": "^\\d{7}$",
+    "zones": [
+      { "key": "red", "name": "红球", "min": 1, "max": 33, "pick": 6, "ordered": false },
+      { "key": "blue", "name": "蓝球", "min": 1, "max": 16, "pick": 1, "ordered": false }
+    ],
+    "sources": {
+      "official": {
+        "parser": "cwl",
+        "urlTemplate": "https://www.cwl.gov.cn/cwl_admin/front/cwlkj/search/kjxx/findDrawNotice?name=ssq&pageNo={pageNo}&pageSize={pageSize}&systemType=PC"
+      },
+      "fallback": {
+        "parser": "huiniao",
+        "urlTemplate": "https://api.huiniao.top/interface/home/lotteryHistory?type=ssq&page={pageNo}&limit={pageSize}"
+      }
+    }
+  },
+  "dlt": {
+    "id": "dlt",
+    "name": "大乐透",
+    "issuer": "sporttery",
+    "enabled": true,
+    "drawSchedule": "每周一、三、六 21:25",
+    "drawNoPattern": "^\\d{5}$",
+    "zones": [
+      { "key": "front", "name": "前区", "min": 1, "max": 35, "pick": 5, "ordered": false },
+      { "key": "back", "name": "后区", "min": 1, "max": 12, "pick": 2, "ordered": false }
+    ],
+    "sources": {
+      "official": {
+        "parser": "sporttery",
+        "urlTemplate": "https://webapi.sporttery.cn/gateway/lottery/getHistoryPageListV1.qry?gameNo=85&provinceId=0&pageSize={pageSize}&pageNo={pageNo}",
+        "headers": { "Referer": "https://www.sporttery.cn/" }
+      },
+      "fallback": {
+        "parser": "huiniao",
+        "urlTemplate": "https://api.huiniao.top/interface/home/lotteryHistory?type=dlt&page={pageNo}&limit={pageSize}"
+      }
+    }
+  },
+  "pl3": {
+    "id": "pl3",
+    "name": "排列三",
+    "issuer": "sporttery",
+    "enabled": false,
+    "drawSchedule": "每日 21:25",
+    "drawNoPattern": "^\\d{5}$",
+    "zones": [
+      { "key": "digit", "name": "百十个位", "min": 0, "max": 9, "pick": 3, "ordered": true }
+    ],
+    "sources": {
+      "official": {
+        "parser": "sporttery",
+        "urlTemplate": "https://webapi.sporttery.cn/gateway/lottery/getHistoryPageListV1.qry?gameNo=35&provinceId=0&pageSize={pageSize}&pageNo={pageNo}",
+        "headers": { "Referer": "https://www.sporttery.cn/" }
+      },
+      "fallback": {
+        "parser": "huiniao",
+        "urlTemplate": "https://api.huiniao.top/interface/home/lotteryHistory?type=pl3&page={pageNo}&limit={pageSize}"
+      }
+    }
+  },
+  "fc3d": {
+    "id": "fc3d",
+    "name": "福彩3D",
+    "issuer": "welfare",
+    "enabled": false,
+    "drawSchedule": "每日 21:15",
+    "drawNoPattern": "^\\d{7}$",
+    "zones": [
+      { "key": "digit", "name": "百十个位", "min": 0, "max": 9, "pick": 3, "ordered": true }
+    ],
+    "sources": {
+      "official": {
+        "parser": "cwl",
+        "urlTemplate": "https://www.cwl.gov.cn/cwl_admin/front/cwlkj/search/kjxx/findDrawNotice?name=3d&pageNo={pageNo}&pageSize={pageSize}&systemType=PC"
+      },
+      "fallback": {
+        "parser": "huiniao",
+        "urlTemplate": "https://api.huiniao.top/interface/home/lotteryHistory?type=3d&page={pageNo}&limit={pageSize}"
+      }
+    }
+  },
+  "qlc": {
+    "id": "qlc",
+    "name": "七乐彩",
+    "issuer": "welfare",
+    "enabled": false,
+    "drawSchedule": "每周一、三、五 21:15",
+    "drawNoPattern": "^\\d{7}$",
+    "zones": [
+      { "key": "basic", "name": "基本号", "min": 1, "max": 30, "pick": 7, "ordered": false },
+      { "key": "special", "name": "特别号", "min": 1, "max": 30, "pick": 1, "ordered": false }
+    ],
+    "sources": {
+      "official": {
+        "parser": "cwl",
+        "urlTemplate": "https://www.cwl.gov.cn/cwl_admin/front/cwlkj/search/kjxx/findDrawNotice?name=qlc&pageNo={pageNo}&pageSize={pageSize}&systemType=PC"
+      },
+      "fallback": {
+        "parser": "huiniao",
+        "urlTemplate": "https://api.huiniao.top/interface/home/lotteryHistory?type=qlc&page={pageNo}&limit={pageSize}"
+      }
+    }
+  }
+}

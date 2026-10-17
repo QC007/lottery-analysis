@@ -1,0 +1,62 @@
+name: fetch-lottery-data
+
+on:
+  schedule:
+    # GitHub cron 为 UTC：14:15 UTC = 北京时间 22:15（当日开奖 21:15/21:25 之后）
+    - cron: '15 14 * * *'
+    # 02:00 UTC = 北京时间 10:00（白天兜底补抓）
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+    inputs:
+      backfill:
+        description: '全量回填历史数据（true/false）'
+        required: false
+        default: 'false'
+
+permissions:
+  contents: write # 提交 data/ 变更
+  issues: write # 失败时建 Issue 告警
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: 抓取并合并开奖数据
+        run: >-
+          node scripts/fetch-data.mjs
+          ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.backfill == 'true' && '--backfill' || '' }}
+
+      - name: 提交数据变更
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/
+          if git diff --cached --quiet; then
+            echo "无数据变更，跳过提交"
+          else
+            git commit -m "data: 更新开奖数据 [skip ci]"
+            git push
+          fi
+
+      - name: 抓取失败时创建 Issue 告警
+        if: failure()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: `⚠️ 开奖数据抓取失败 - ${new Date().toISOString().slice(0, 10)}`,
+              body: [
+                `工作流运行失败，请查看日志：`,
+                `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`,
+                '',
+                '连续失败时请按《项目实施文档》D-06 使用手动 CSV 导入兜底。',
+              ].join('\n'),
+            })
