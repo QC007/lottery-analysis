@@ -137,32 +137,36 @@ async function syncLottery(config) {
   return summary
 }
 
-/** 抓取一页官方数据（带重试），返回统一开奖对象数组 */
+/** 抓取一页数据（带重试 + fallback 切换），返回统一开奖对象数组 */
 async function fetchPage(config, pageNo) {
-  const src = config.sources.official
-  const url = src.urlTemplate
-    .replace('{pageNo}', String(pageNo))
-    .replace('{pageSize}', String(PAGE_SIZE))
+  const sources = [config.sources.official, config.sources.fallback].filter((s) => s.urlTemplate)
 
   let lastErr
-  for (let attempt = 1; attempt <= RETRY; attempt++) {
-    try {
-      const res = await fetch(url, {
-        headers: { 'User-Agent': UA, ...(src.headers ?? {}) },
-      })
-      if (!res.ok) throw new Error(`HTTP ${res.status}`)
-      return parseOfficial(config, await res.json())
-    } catch (err) {
-      lastErr = err
-      if (attempt < RETRY) await sleep(1000 * attempt)
+  for (const src of sources) {
+    const url = src.urlTemplate
+      .replace('{pageNo}', String(pageNo))
+      .replace('{pageSize}', String(PAGE_SIZE))
+
+    for (let attempt = 1; attempt <= RETRY; attempt++) {
+      try {
+        const res = await fetch(url, {
+          headers: { 'User-Agent': UA, ...(src.headers ?? {}) },
+        })
+        if (!res.ok) throw new Error(`HTTP ${res.status}`)
+        return parseSource(config, src.parser, await res.json())
+      } catch (err) {
+        lastErr = err
+        if (attempt < RETRY) await sleep(1000 * attempt)
+      }
     }
+    console.warn(`⚠️  [${config.name}] 源 ${src.parser} 失败: ${lastErr.message}，尝试下一个源`)
   }
   throw new Error(`第 ${pageNo} 页抓取失败: ${lastErr.message}`)
 }
 
-/** 官方响应 → 统一开奖对象 */
-function parseOfficial(config, json) {
-  if (config.sources.official.parser === 'sporttery') {
+/** 按 parser 类型分发解析 */
+function parseSource(config, parser, json) {
+  if (parser === 'sporttery') {
     // 实测结构：{ value: { list: [{ lotteryDrawNum, lotteryDrawTime, lotteryDrawResult: "02 09 21 26 32 06 12" }] } }
     return (json?.value?.list ?? []).map((item) => ({
       drawNo: String(item.lotteryDrawNum),
@@ -170,15 +174,37 @@ function parseOfficial(config, json) {
       zones: splitZones(config, String(item.lotteryDrawResult).trim().split(/\s+/).map(Number)),
     }))
   }
-  // cwl 实测结构：{ result: [{ code, date: "2026-10-15(四)", red: "05,21,22,23,28,31", blue: "14" }] }
-  return (json?.result ?? []).map((item) => ({
-    drawNo: String(item.code),
-    date: String(item.date).slice(0, 10),
-    zones: splitZones(
-      config,
-      [...String(item.red).split(','), ...(item.blue ? [item.blue] : [])].map(Number),
-    ),
-  }))
+  if (parser === 'cwl') {
+    // 实测结构：{ result: [{ code, date: "2026-10-15(四)", red: "05,21,22,23,28,31", blue: "14" }] }
+    return (json?.result ?? []).map((item) => ({
+      drawNo: String(item.code),
+      date: String(item.date).slice(0, 10),
+      zones: splitZones(
+        config,
+        [...String(item.red).split(','), ...(item.blue ? [item.blue] : [])].map(Number),
+      ),
+    }))
+  }
+  if (parser === 'huiniao') {
+    // 实测结构：{ code: 1, data: { data: { list: ["@{code=26118; day=2026-10-17; one=02; two=09; ...}"] } } }
+    const list = json?.data?.data?.list ?? []
+    return list.map((str) => {
+      const fields = {}
+      for (const pair of str.slice(2, -1).split('; ')) {
+        const [k, v] = pair.split('=')
+        fields[k] = v
+      }
+      const nums = [fields.one, fields.two, fields.three, fields.four, fields.five, fields.six, fields.seven]
+        .filter(Boolean)
+        .map(Number)
+      return {
+        drawNo: String(fields.code),
+        date: String(fields.day),
+        zones: splitZones(config, nums),
+      }
+    })
+  }
+  throw new Error(`未知 parser: ${parser}`)
 }
 
 /** 按配置各 zones 的 pick 依次切分号码；无序区升序存储 */
