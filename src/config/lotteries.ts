@@ -24,8 +24,8 @@ export interface LotteryZone {
 
 export interface LotterySource {
   /** 响应解析器标识，scripts/fetch-data.mjs 按此分发解析 */
-  parser: 'sporttery' | 'cwl' | 'huiniao'
-  /** URL 模板，占位符 {pageNo} {pageSize} */
+  parser: 'sporttery' | 'cwl' | 'huiniao' | 'apihz'
+  /** URL 模板，占位符 {pageNo} {pageSize}（apihz 单期源无占位符） */
   urlTemplate: string
   /** 抓取需附加的请求头（体彩 WAF 要求 Referer） */
   headers?: Record<string, string>
@@ -47,8 +47,10 @@ export interface LotteryConfig {
   sources: {
     /** 官方抓取源（Actions 服务端使用） */
     official: LotterySource
-    /** 运行时备用源（前端直连兜底；urlTemplate 为空表示未配置） */
+    /** 备用源 1：灰鸟（可分页补历史） */
     fallback: LotterySource
+    /** 备用源 2：apihz（单期最新，最后兜底） */
+    fallback2?: LotterySource
   }
 }
 
