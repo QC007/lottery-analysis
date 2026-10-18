@@ -10,6 +10,7 @@ import {
 import { CanvasRenderer } from 'echarts/renderers'
 import { useEffect, useRef } from 'react'
 import type { BacktestPoint } from '../workers/backtest.worker'
+import { CHART, DATAZOOM_SLIDER_DARK, TOOLTIP_DARK } from '../theme/chart'
 
 echarts.use([
   LineChart,
@@ -47,10 +48,11 @@ export default function BacktestChart({
     const chart = chartRef.current
     if (!chart || series.length === 0) return
     const xData = series[0].points.map((p) => p.drawNo)
-    const colors = ['#e34040', '#3b7cff', '#16a34a']
+    const colors = [CHART.red, CHART.blue, CHART.green]
     chart.setOption(
       {
         tooltip: {
+          ...TOOLTIP_DARK,
           trigger: 'axis',
           formatter: (ps: Array<{ seriesIndex: number; dataIndex: number }>) => {
             const idx = ps[0]?.dataIndex ?? 0
@@ -69,22 +71,22 @@ export default function BacktestChart({
             return lines.join('<br/>')
           },
         },
-        legend: series.length > 1 ? { top: 0, textStyle: { fontSize: 11 } } : undefined,
+        legend: series.length > 1 ? { top: 0, textStyle: { fontSize: 11, color: CHART.text } } : undefined,
         grid: { left: 56, right: 16, top: series.length > 1 ? 30 : 20, bottom: 56 },
         xAxis: {
           type: 'category',
           data: xData,
-          axisLabel: { color: '#86909c', fontSize: 10, interval: Math.floor(xData.length / 8) },
-          axisLine: { lineStyle: { color: '#e5e6eb' } },
+          axisLabel: { color: CHART.text, fontSize: 10, interval: Math.floor(xData.length / 8) },
+          axisLine: { lineStyle: { color: CHART.axisLine } },
         },
         yAxis: {
           type: 'value',
-          axisLabel: { color: '#86909c', fontSize: 10 },
-          splitLine: { lineStyle: { color: '#f0f1f3' } },
+          axisLabel: { color: CHART.text, fontSize: 10 },
+          splitLine: { lineStyle: { color: CHART.splitLine } },
         },
         dataZoom: [
           { type: 'inside' },
-          { type: 'slider', height: 18, bottom: 8, textStyle: { fontSize: 10 } },
+          { type: 'slider', ...DATAZOOM_SLIDER_DARK },
         ],
         series: series.map((s, i) => ({
           name: s.name,
@@ -98,8 +100,8 @@ export default function BacktestChart({
               ? {
                   silent: true,
                   symbol: 'none',
-                  label: { formatter: '回本线', color: '#86909c', fontSize: 10 },
-                  lineStyle: { color: '#16a34a', type: 'dashed' },
+                  label: { formatter: '回本线', color: CHART.text, fontSize: 10 },
+                  lineStyle: { color: CHART.green, type: 'dashed' },
                   data: [{ yAxis: 0 }],
                 }
               : undefined,

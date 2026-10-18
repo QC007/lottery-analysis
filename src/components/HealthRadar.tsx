@@ -4,6 +4,7 @@ import { LegendComponent, TooltipComponent } from 'echarts/components'
 import { CanvasRenderer } from 'echarts/renderers'
 import { useEffect, useRef } from 'react'
 import type { HealthDimension } from '../services/health'
+import { CHART, TOOLTIP_DARK } from '../theme/chart'
 
 echarts.use([RadarChart, TooltipComponent, LegendComponent, CanvasRenderer])
 
@@ -29,13 +30,13 @@ export default function HealthRadar({ dimensions }: { dimensions: HealthDimensio
     if (!chart) return
     chart.setOption(
       {
-        tooltip: {},
+        tooltip: { ...TOOLTIP_DARK },
         radar: {
           indicator: dimensions.map((d) => ({ name: d.name, max: 100 })),
           radius: '68%',
-          axisName: { color: '#4e5969', fontSize: 12 },
-          splitArea: { areaStyle: { color: ['#fff', '#f7f8fa'] } },
-          splitLine: { lineStyle: { color: '#e5e6eb' } },
+          axisName: { color: CHART.text, fontSize: 12 },
+          splitArea: { areaStyle: { color: ['rgba(88,166,255,0.04)', 'transparent'] } },
+          splitLine: { lineStyle: { color: CHART.axisLine } },
         },
         series: [
           {
@@ -44,9 +45,9 @@ export default function HealthRadar({ dimensions }: { dimensions: HealthDimensio
               {
                 value: dimensions.map((d) => d.score),
                 name: '健康度评分',
-                areaStyle: { color: 'rgba(59,124,255,0.25)' },
-                lineStyle: { color: '#3b7cff' },
-                itemStyle: { color: '#3b7cff' },
+                areaStyle: { color: 'rgba(88,166,255,0.22)' },
+                lineStyle: { color: CHART.blue },
+                itemStyle: { color: CHART.blue },
               },
             ],
           },

@@ -4,6 +4,7 @@ import { GridComponent, TooltipComponent } from 'echarts/components'
 import { CanvasRenderer } from 'echarts/renderers'
 import { useEffect, useRef } from 'react'
 import type { ZoneStats } from '../workers/analysis.worker'
+import { CHART, TOOLTIP_DARK } from '../theme/chart'
 
 echarts.use([BarChart, GridComponent, TooltipComponent, CanvasRenderer])
 
@@ -30,6 +31,7 @@ export default function FrequencyChart({ zone }: { zone: ZoneStats }) {
     const maxCount = Math.max(...zone.numbers.map((s) => s.count), 1)
     chart.setOption({
       tooltip: {
+        ...TOOLTIP_DARK,
         trigger: 'axis',
         axisPointer: { type: 'shadow' },
         formatter: (ps: Array<{ dataIndex: number }>) => {
@@ -43,20 +45,26 @@ export default function FrequencyChart({ zone }: { zone: ZoneStats }) {
       xAxis: {
         type: 'category',
         data: zone.numbers.map((s) => String(s.n).padStart(2, '0')),
-        axisLabel: { color: '#86909c', fontSize: 10 },
-        axisLine: { lineStyle: { color: '#e5e6eb' } },
+        axisLabel: { color: CHART.text, fontSize: 10 },
+        axisLine: { lineStyle: { color: CHART.axisLine } },
       },
       yAxis: {
         type: 'value',
         max: Math.ceil(maxCount * 1.15),
-        axisLabel: { color: '#86909c', fontSize: 10 },
-        splitLine: { lineStyle: { color: '#f0f1f3' } },
+        axisLabel: { color: CHART.text, fontSize: 10 },
+        splitLine: { lineStyle: { color: CHART.splitLine } },
       },
       series: [
         {
           type: 'bar',
           data: zone.numbers.map((s) => s.count),
-          itemStyle: { color: '#3b7cff', borderRadius: [2, 2, 0, 0] },
+          itemStyle: {
+            color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+              { offset: 0, color: '#79c0ff' },
+              { offset: 1, color: '#1f6feb' },
+            ]),
+            borderRadius: [3, 3, 0, 0],
+          },
           barMaxWidth: 14,
         },
       ],
