@@ -4,17 +4,8 @@ import { runBacktest } from '../services/backtest'
 import type { BacktestResult } from '../workers/backtest.worker'
 import NumberPicker, { togglePick } from './NumberPicker'
 import BacktestChart from './BacktestChart'
+import PeriodSlider from './PeriodSlider'
 import { isSuppressed, suppress24h } from '../services/rational'
-
-type RangeKey = '100' | '1y' | '3y' | 'all' | 'custom'
-
-const RANGE_OPTIONS: { key: RangeKey; label: string }[] = [
-  { key: '100', label: '近 100 期' },
-  { key: '1y', label: '近 1 年' },
-  { key: '3y', label: '近 3 年' },
-  { key: 'all', label: '全部历史' },
-  { key: 'custom', label: '自定义' },
-]
 
 interface Group {
   /** 每区已选号码 */
@@ -29,32 +20,15 @@ function picksComplete(config: LotteryConfig, picks: number[][]): boolean {
   return config.zones.every((z, i) => (picks[i] ?? []).length === z.pick)
 }
 
-/** 由范围快捷项推算起始期号（draws 降序） */
-function resolveStartDrawNo(sorted: Draw[], range: RangeKey): string | null {
-  if (sorted.length === 0) return null
-  if (range === 'all') return sorted[sorted.length - 1].drawNo
-  if (range === '100') return sorted[Math.min(99, sorted.length - 1)].drawNo
-  if (range === 'custom') return null // 由 resolveCustomStart 处理
-  const years = range === '1y' ? 1 : 3
+/** 默认模拟起点：约 3 年前（本地数据不足 3 年则取最旧一期） */
+function defaultStartIdx(sorted: Draw[]): number {
+  if (sorted.length === 0) return 0
   const cutoff = new Date(sorted[0].date)
-  cutoff.setFullYear(cutoff.getFullYear() - years)
+  cutoff.setFullYear(cutoff.getFullYear() - 3)
   const iso = cutoff.toISOString().slice(0, 10)
-  // 找到不早于 cutoff 的最旧一期
-  let start = sorted[sorted.length - 1]
-  for (const d of sorted) if (d.date >= iso) start = d
-  return start.drawNo
-}
-
-/** 自定义范围起始期号：填了期号用期号（须存在），否则取最近 N 期 */
-function resolveCustomStart(sorted: Draw[], startNo: string, n: string): string | null {
-  if (sorted.length === 0) return null
-  const no = startNo.trim()
-  if (no) {
-    return sorted.some((d) => d.drawNo === no) ? no : null
-  }
-  const count = Number(n)
-  if (!Number.isInteger(count) || count < 2 || count > sorted.length) return null
-  return sorted[Math.min(count - 1, sorted.length - 1)].drawNo
+  let idx = sorted.length - 1
+  for (let i = 0; i < sorted.length; i++) if (sorted[i].date >= iso) idx = i
+  return idx
 }
 
 function Summary({ name, r }: { name: string; r: BacktestResult }) {
@@ -130,11 +104,8 @@ export default function BacktestPanel({
   const [groupA, setGroupA] = useState<Group>({ picks: emptyPicks(config) })
   const [groupB, setGroupB] = useState<Group>({ picks: emptyPicks(config) })
   const [compareOn, setCompareOn] = useState(false)
-  const [range, setRange] = useState<RangeKey>('3y')
-  // 自定义范围：起始期号（优先）或最近 N 期
-  const [customStart, setCustomStart] = useState('')
-  const [customN, setCustomN] = useState('')
-  const [customErr, setCustomErr] = useState('')
+  // 模拟起点期号（null = 默认近 3 年）；锚定 drawNo，归档扩充时自动跟随
+  const [startNo, setStartNo] = useState<string | null>(null)
   const [running, setRunning] = useState(false)
   const [results, setResults] = useState<{ a: BacktestResult; b?: BacktestResult } | null>(null)
   // F-10：查看亏损模拟结果后的内联理性提示（24h 防疲劳）
@@ -145,23 +116,24 @@ export default function BacktestPanel({
   useEffect(() => {
     setGroupA({ picks: emptyPicks(config) })
     setGroupB({ picks: emptyPicks(config) })
+    setStartNo(null)
     setResults(null)
   }, [configId, config])
 
+  const startIdx = useMemo(() => {
+    if (sorted.length === 0) return 0
+    if (!startNo) return defaultStartIdx(sorted)
+    const i = sorted.findIndex((d) => d.drawNo === startNo)
+    return i >= 0 ? i : defaultStartIdx(sorted)
+  }, [sorted, startNo])
+  const startDrawNo = sorted[startIdx]?.drawNo ?? null
+
   const readyA = picksComplete(config, groupA.picks)
   const readyB = picksComplete(config, groupB.picks)
-  const canRun = readyA && (!compareOn || readyB) && sorted.length > 0 && !running
+  const canRun = readyA && (!compareOn || readyB) && sorted.length > 1 && !running
 
   const run = async () => {
-    setCustomErr('')
-    const startDrawNo =
-      range === 'custom'
-        ? resolveCustomStart(sorted, customStart, customN)
-        : resolveStartDrawNo(sorted, range)
-    if (!startDrawNo) {
-      setCustomErr('自定义范围无效：请填写本地存在的起始期号，或 2 ~ 本地期数 的期数')
-      return
-    }
+    if (!startDrawNo) return
     setRunning(true)
     setLossTip(false)
     try {
@@ -243,48 +215,21 @@ export default function BacktestPanel({
         )}
       </div>
 
+      {sorted.length >= 2 && (
+        <PeriodSlider
+          single
+          count={sorted.length}
+          value={[sorted.length - 1 - startIdx, sorted.length - 1]}
+          format={(pos) => sorted[sorted.length - 1 - pos]?.drawNo ?? ''}
+          onChange={([lo]) => setStartNo(sorted[sorted.length - 1 - lo].drawNo)}
+        />
+      )}
+
       <div className="bt-controls">
-        <div className="range-tabs">
-          {RANGE_OPTIONS.map((o) => (
-            <button
-              key={o.key}
-              className={`range-tab${range === o.key ? ' is-active' : ''}`}
-              onClick={() => setRange(o.key)}
-            >
-              {o.label}
-            </button>
-          ))}
-        </div>
         <button className="btn" disabled={!canRun} onClick={run}>
           {running ? '计算中…' : '开始模拟'}
         </button>
       </div>
-
-      {range === 'custom' && (
-        <div className="custom-range">
-          <label>
-            从
-            <input
-              placeholder="起始期号"
-              value={customStart}
-              onChange={(e) => setCustomStart(e.target.value)}
-            />
-          </label>
-          <span className="custom-sep">或最近</span>
-          <label>
-            <input
-              type="number"
-              min={2}
-              placeholder="期数"
-              value={customN}
-              onChange={(e) => setCustomN(e.target.value)}
-            />
-            期
-          </label>
-          <span className="hint">（模拟从起点运行至最新一期）</span>
-        </div>
-      )}
-      {range === 'custom' && customErr && <p className="hint custom-err">{customErr}</p>}
 
       {sorted.length === 0 && <p className="hint">本地暂无数据，请先等待同步完成。</p>}
 
