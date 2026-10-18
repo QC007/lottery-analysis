@@ -1151,6 +1151,18 @@ body {
   color: var(--gold);
 }
 
+/* ---- U-6 注单历史表现展开区 ---- */
+.rec-hist-btn {
+  margin-top: 10px;
+  width: 100%;
+  min-height: 44px; /* 手机触控热区 */
+}
+.rec-hist {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px dashed var(--border);
+}
+
 /* ---- 通用表单控件深色适配 ---- */
 input[type='checkbox'] {
   accent-color: var(--blue);

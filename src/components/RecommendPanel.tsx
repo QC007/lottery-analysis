@@ -1,8 +1,10 @@
 import { useEffect, useMemo, useState } from 'react'
 import type { Draw, LotteryConfig } from '../config/lotteries'
 import { generateRecommendations, type RecommendResult } from '../services/recommend'
+import { analyzeMyNumbers } from '../services/mynumbers'
 import { Ball } from './Ball'
 import PeriodPicker from './PeriodPicker'
+import MyNumbersResultView from './MyNumbersResultView'
 
 const BET_CHIPS = [1, 2, 3, 4, 5]
 /** 数据少于此期数时统计意义太弱，不允许生成 */
@@ -12,6 +14,8 @@ const MIN_WINDOW = 10
  * U-3 AI 统计选号
  * 用户主动点击生成：选历史期数范围 + 注数（1~5）→ 多算法融合打分 → 加权抽样
  * 每个号码附入选依据，整体附统计方法说明与诚实免责声明
+ * U-6：每注可点「查看历史表现」——复用 U-4 自选号码分析引擎，
+ * 在用户可随意重选的历史期数中逐期比对官方奖级（中过哪些奖）+ 每号码统计
  */
 export default function RecommendPanel({
   config,
@@ -26,12 +30,17 @@ export default function RecommendPanel({
   const [sel, setSel] = useState<{ from: string; to: string } | null>(null)
   const [betCount, setBetCount] = useState(2)
   const [result, setResult] = useState<RecommendResult | null>(null)
+  // U-6：展开查看历史表现的注序号（null=未展开）；histSel=null 时继承生成窗口
+  const [openBet, setOpenBet] = useState<number | null>(null)
+  const [histSel, setHistSel] = useState<{ from: string; to: string } | null>(null)
 
   const configId = config.id
   useEffect(() => {
     setSel(null)
     setResult(null)
     setBetCount(2)
+    setOpenBet(null)
+    setHistSel(null)
   }, [configId])
 
   const toIdx = useMemo(() => {
@@ -57,8 +66,40 @@ export default function RecommendPanel({
   const canGenerate = windowDraws.length >= MIN_WINDOW
   const generate = () => {
     if (!canGenerate) return
+    setOpenBet(null)
+    setHistSel(null)
     setResult(generateRecommendations(config, windowDraws, betCount))
   }
+
+  /* ---- U-6 注单历史表现（展开注独立选窗，默认继承生成窗口） ---- */
+  const effHistSel = histSel ?? sel
+  const histToIdx = useMemo(() => {
+    if (!effHistSel) return 0
+    const i = sorted.findIndex((d) => d.drawNo === effHistSel.to)
+    return i >= 0 ? i : 0
+  }, [sorted, effHistSel])
+  const histFromIdx = useMemo(() => {
+    if (!effHistSel) return Math.min(99, n - 1)
+    const i = sorted.findIndex((d) => d.drawNo === effHistSel.from)
+    return i >= 0 ? i : Math.min(99, n - 1)
+  }, [sorted, effHistSel, n])
+  const histDraws = useMemo(
+    () => (n > 0 ? sorted.slice(histToIdx, Math.max(histFromIdx, histToIdx) + 1) : []),
+    [sorted, n, histToIdx, histFromIdx],
+  )
+  const histWin: [number, number] = [n - 1 - Math.max(histFromIdx, histToIdx), n - 1 - histToIdx]
+
+  const openPicks = useMemo(() => {
+    if (openBet === null || !result) return null
+    return result.bets[openBet].zones.map((nums) => nums.map((x) => x.n))
+  }, [openBet, result])
+  const histResult = useMemo(
+    () =>
+      openPicks && histDraws.length >= 2
+        ? analyzeMyNumbers(config, openPicks, histDraws)
+        : null,
+    [config, openPicks, histDraws],
+  )
 
   return (
     <section className="card">
@@ -121,6 +162,28 @@ export default function RecommendPanel({
                   </div>
                 </div>
               ))}
+              <button
+                type="button"
+                className="btn rec-hist-btn"
+                aria-expanded={openBet === bi}
+                onClick={() => setOpenBet(openBet === bi ? null : bi)}
+              >
+                {openBet === bi ? '收起历史表现' : '查看这注的历史表现'}
+              </button>
+              {openBet === bi && (
+                <div className="rec-hist">
+                  <p className="hint">可重新选择历史期数，逐期比对该注号码中过哪些奖：</p>
+                  <PeriodPicker
+                    count={n}
+                    value={histWin}
+                    format={format}
+                    onChange={([lo, hi]) =>
+                      setHistSel({ from: sorted[n - 1 - lo].drawNo, to: sorted[n - 1 - hi].drawNo })
+                    }
+                  />
+                  {histResult && <MyNumbersResultView config={config} result={histResult} />}
+                </div>
+              )}
             </div>
           ))}
           <p className="hint rec-principle">
