@@ -721,3 +721,97 @@ body {
   border-top: 1px dashed #e5e6eb;
   padding-top: 8px;
 }
+
+/* ---- 第 6 批：宽表横向滚动（窄屏防溢出，桌面无感） ---- */
+.omission-wrap {
+  overflow-x: auto;
+}
+
+/* ---- 第 6 批：轻量动效 ---- */
+.sync-banner,
+.rational-banner,
+.loss-tip {
+  animation: rise-in 0.25s ease;
+}
+@keyframes rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.btn:hover {
+  opacity: 0.85;
+}
+.btn:active {
+  transform: scale(0.97);
+}
+.pick-ball:not(.is-off):active {
+  transform: scale(0.92);
+}
+.range-tab:hover,
+.tab:hover {
+  opacity: 0.75;
+}
+.capsule {
+  transition: filter 0.15s ease;
+}
+.capsule:hover {
+  filter: brightness(1.12);
+}
+.ai-q {
+  cursor: pointer;
+  transition: opacity 0.15s ease;
+}
+.ai-q:hover {
+  opacity: 0.7;
+}
+
+/* ---- 第 6 批：移动端适配（≤480px） ---- */
+@media (max-width: 480px) {
+  .app {
+    padding: 20px 12px;
+  }
+  .chart {
+    height: 260px;
+  }
+  .tabs {
+    flex-wrap: wrap;
+  }
+  .tab {
+    flex: 1;
+    min-width: 96px;
+    text-align: center;
+  }
+  .bt-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 5px;
+  }
+  .bt-cell {
+    padding: 6px 8px;
+  }
+  .bt-cell b {
+    font-size: 13px;
+  }
+  .health-score {
+    font-size: 32px;
+  }
+  .ai-modal {
+    max-width: calc(100vw - 48px);
+  }
+  .capsule {
+    min-width: 56px;
+    font-size: 10px;
+  }
+  .zone-name {
+    width: 40px;
+  }
+  .ball {
+    width: 30px;
+    height: 30px;
+    font-size: 13px;
+  }
+}
