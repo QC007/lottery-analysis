@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from 'react'
+import { useEffect, useMemo, lazy, Suspense } from 'react'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { enabledLotteries } from './config/lotteries'
 import { db } from './db/db'
@@ -9,6 +9,9 @@ import LotteryTabs from './components/LotteryTabs'
 import LatestDrawCard from './components/LatestDrawCard'
 import HotColdPanel from './components/HotColdPanel'
 import HistoryPanel from './components/HistoryPanel'
+
+// 分析区（含 ECharts ~500KB）按需加载：首包不包含，滚动到需用时才拉取
+const AnalysisSection = lazy(() => import('./components/AnalysisSection'))
 
 export default function App() {
   const activeLotteryId = useStore((s) => s.activeLotteryId)
@@ -65,6 +68,9 @@ export default function App() {
         <>
           <LatestDrawCard config={config} draw={latest} />
           <HotColdPanel config={config} draws={sorted} />
+          <Suspense fallback={<p className="hint">加载分析模块…</p>}>
+            <AnalysisSection config={config} sorted={sorted} />
+          </Suspense>
           <HistoryPanel config={config} localCount={sorted.length} />
         </>
       ) : (
