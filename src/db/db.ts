@@ -17,9 +17,16 @@ export interface SyncState {
   syncedAt: number
 }
 
+/** 通用键值设置（F-05：LLM 配置、首次提示标记等；存 IndexedDB 而非 localStorage，避免 XSS 读取） */
+export interface SettingRecord {
+  key: string
+  value: unknown
+}
+
 class LotteryDB extends Dexie {
   draws!: Table<DrawRecord, [string, string]>
   syncState!: Table<SyncState, string>
+  settings!: Table<SettingRecord, string>
 
   constructor() {
     super('lap-db')
@@ -27,6 +34,12 @@ class LotteryDB extends Dexie {
       // 复合主键 [lottery+drawNo] 天然防重，bulkPut 即 upsert
       draws: '[lottery+drawNo], lottery, date',
       syncState: 'lottery',
+    })
+    // v2：新增 settings 键值表（原有两表结构不变）
+    this.version(2).stores({
+      draws: '[lottery+drawNo], lottery, date',
+      syncState: 'lottery',
+      settings: 'key',
     })
   }
 }

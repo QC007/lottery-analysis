@@ -12,6 +12,8 @@ import HistoryPanel from './components/HistoryPanel'
 
 // 分析区（含 ECharts ~500KB）按需加载：首包不包含，滚动到需用时才拉取
 const AnalysisSection = lazy(() => import('./components/AnalysisSection'))
+// 第 4 批功能面板（F-03/F-04/F-05，含 ECharts 雷达/曲线）同样拆包
+const FeaturePanels = lazy(() => import('./components/FeaturePanels'))
 
 export default function App() {
   const activeLotteryId = useStore((s) => s.activeLotteryId)
@@ -70,6 +72,9 @@ export default function App() {
           <HotColdPanel config={config} draws={sorted} />
           <Suspense fallback={<p className="hint">加载分析模块…</p>}>
             <AnalysisSection config={config} sorted={sorted} />
+          </Suspense>
+          <Suspense fallback={<p className="hint">加载功能面板…</p>}>
+            <FeaturePanels config={config} sorted={sorted} />
           </Suspense>
           <HistoryPanel config={config} localCount={sorted.length} />
         </>

@@ -10,6 +10,17 @@
       { "key": "red", "name": "红球", "min": 1, "max": 33, "pick": 6, "ordered": false },
       { "key": "blue", "name": "蓝球", "min": 1, "max": 16, "pick": 1, "ordered": false }
     ],
+    "prize": {
+      "unitCost": 2,
+      "tiers": [
+        { "name": "一等奖", "match": [[6, 1]], "amount": 0 },
+        { "name": "二等奖", "match": [[6, 0]], "amount": 0 },
+        { "name": "三等奖", "match": [[5, 1]], "amount": 3000 },
+        { "name": "四等奖", "match": [[5, 0], [4, 1]], "amount": 200 },
+        { "name": "五等奖", "match": [[4, 0], [3, 1]], "amount": 10 },
+        { "name": "六等奖", "match": [[2, 1], [1, 1], [0, 1]], "amount": 5 }
+      ]
+    },
     "sources": {
       "official": {
         "parser": "cwl",
@@ -36,6 +47,20 @@
       { "key": "front", "name": "前区", "min": 1, "max": 35, "pick": 5, "ordered": false },
       { "key": "back", "name": "后区", "min": 1, "max": 12, "pick": 2, "ordered": false }
     ],
+    "prize": {
+      "unitCost": 3,
+      "tiers": [
+        { "name": "一等奖", "match": [[5, 2]], "amount": 0 },
+        { "name": "二等奖", "match": [[5, 1]], "amount": 0 },
+        { "name": "三等奖", "match": [[5, 0]], "amount": 10000 },
+        { "name": "四等奖", "match": [[4, 2]], "amount": 3000 },
+        { "name": "五等奖", "match": [[4, 1]], "amount": 300 },
+        { "name": "六等奖", "match": [[3, 2]], "amount": 200 },
+        { "name": "七等奖", "match": [[4, 0]], "amount": 100 },
+        { "name": "八等奖", "match": [[3, 1], [2, 2]], "amount": 15 },
+        { "name": "九等奖", "match": [[3, 0], [2, 1], [1, 2], [0, 2]], "amount": 5 }
+      ]
+    },
     "sources": {
       "official": {
         "parser": "sporttery",

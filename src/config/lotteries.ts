@@ -31,6 +31,24 @@ export interface LotterySource {
   headers?: Record<string, string>
 }
 
+/**
+ * 奖级规则（回溯模拟器 F-03 使用，官方规则）
+ * match 元素为 [主区命中数, 副区命中数]；amount=0 表示浮动奖（模拟中单独计数、不计入金额）
+ * tiers 必须按奖金优先级从高到低排序，判定时取第一个命中的奖级
+ */
+export interface PrizeTier {
+  name: string
+  match: [number, number][]
+  /** 单注固定奖金（元）；0 = 浮动奖 */
+  amount: number
+}
+
+export interface PrizeRule {
+  /** 单注成本（元） */
+  unitCost: number
+  tiers: PrizeTier[]
+}
+
 export interface LotteryConfig {
   /** 彩种唯一标识（数据目录名）：ssq / dlt / pl3 / fc3d / qlc */
   id: string
@@ -44,6 +62,8 @@ export interface LotteryConfig {
   /** 期号格式正则（字符串形式）：7 位=4 位年+3 位序号；5 位=2 位年+3 位序号 */
   drawNoPattern: string
   zones: LotteryZone[]
+  /** 奖级规则（仅"主区+副区"两区无序彩种；有序数字彩种不适用） */
+  prize?: PrizeRule
   sources: {
     /** 官方抓取源（Actions 服务端使用） */
     official: LotterySource
