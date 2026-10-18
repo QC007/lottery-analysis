@@ -6,13 +6,14 @@ import NumberPicker, { togglePick } from './NumberPicker'
 import BacktestChart from './BacktestChart'
 import { isSuppressed, suppress24h } from '../services/rational'
 
-type RangeKey = '100' | '1y' | '3y' | 'all'
+type RangeKey = '100' | '1y' | '3y' | 'all' | 'custom'
 
 const RANGE_OPTIONS: { key: RangeKey; label: string }[] = [
   { key: '100', label: '近 100 期' },
   { key: '1y', label: '近 1 年' },
   { key: '3y', label: '近 3 年' },
   { key: 'all', label: '全部历史' },
+  { key: 'custom', label: '自定义' },
 ]
 
 interface Group {
@@ -33,6 +34,7 @@ function resolveStartDrawNo(sorted: Draw[], range: RangeKey): string | null {
   if (sorted.length === 0) return null
   if (range === 'all') return sorted[sorted.length - 1].drawNo
   if (range === '100') return sorted[Math.min(99, sorted.length - 1)].drawNo
+  if (range === 'custom') return null // 由 resolveCustomStart 处理
   const years = range === '1y' ? 1 : 3
   const cutoff = new Date(sorted[0].date)
   cutoff.setFullYear(cutoff.getFullYear() - years)
@@ -41,6 +43,18 @@ function resolveStartDrawNo(sorted: Draw[], range: RangeKey): string | null {
   let start = sorted[sorted.length - 1]
   for (const d of sorted) if (d.date >= iso) start = d
   return start.drawNo
+}
+
+/** 自定义范围起始期号：填了期号用期号（须存在），否则取最近 N 期 */
+function resolveCustomStart(sorted: Draw[], startNo: string, n: string): string | null {
+  if (sorted.length === 0) return null
+  const no = startNo.trim()
+  if (no) {
+    return sorted.some((d) => d.drawNo === no) ? no : null
+  }
+  const count = Number(n)
+  if (!Number.isInteger(count) || count < 2 || count > sorted.length) return null
+  return sorted[Math.min(count - 1, sorted.length - 1)].drawNo
 }
 
 function Summary({ name, r }: { name: string; r: BacktestResult }) {
@@ -117,6 +131,10 @@ export default function BacktestPanel({
   const [groupB, setGroupB] = useState<Group>({ picks: emptyPicks(config) })
   const [compareOn, setCompareOn] = useState(false)
   const [range, setRange] = useState<RangeKey>('3y')
+  // 自定义范围：起始期号（优先）或最近 N 期
+  const [customStart, setCustomStart] = useState('')
+  const [customN, setCustomN] = useState('')
+  const [customErr, setCustomErr] = useState('')
   const [running, setRunning] = useState(false)
   const [results, setResults] = useState<{ a: BacktestResult; b?: BacktestResult } | null>(null)
   // F-10：查看亏损模拟结果后的内联理性提示（24h 防疲劳）
@@ -135,8 +153,15 @@ export default function BacktestPanel({
   const canRun = readyA && (!compareOn || readyB) && sorted.length > 0 && !running
 
   const run = async () => {
-    const startDrawNo = resolveStartDrawNo(sorted, range)
-    if (!startDrawNo) return
+    setCustomErr('')
+    const startDrawNo =
+      range === 'custom'
+        ? resolveCustomStart(sorted, customStart, customN)
+        : resolveStartDrawNo(sorted, range)
+    if (!startDrawNo) {
+      setCustomErr('自定义范围无效：请填写本地存在的起始期号，或 2 ~ 本地期数 的期数')
+      return
+    }
     setRunning(true)
     setLossTip(false)
     try {
@@ -234,6 +259,32 @@ export default function BacktestPanel({
           {running ? '计算中…' : '开始模拟'}
         </button>
       </div>
+
+      {range === 'custom' && (
+        <div className="custom-range">
+          <label>
+            从
+            <input
+              placeholder="起始期号"
+              value={customStart}
+              onChange={(e) => setCustomStart(e.target.value)}
+            />
+          </label>
+          <span className="custom-sep">或最近</span>
+          <label>
+            <input
+              type="number"
+              min={2}
+              placeholder="期数"
+              value={customN}
+              onChange={(e) => setCustomN(e.target.value)}
+            />
+            期
+          </label>
+          <span className="hint">（模拟从起点运行至最新一期）</span>
+        </div>
+      )}
+      {range === 'custom' && customErr && <p className="hint custom-err">{customErr}</p>}
 
       {sorted.length === 0 && <p className="hint">本地暂无数据，请先等待同步完成。</p>}
 
