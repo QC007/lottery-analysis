@@ -93,10 +93,10 @@ export default function ImportCard({ config }: { config: LotteryConfig }) {
 
   return (
     <section className="card">
-      <h2>手动导入（故障兜底）</h2>
+      <h2>手动导入数据</h2>
       <p className="hint">
-        自动同步异常时，可用官方开奖 CSV 手动补数。校验规则与 GitHub Actions
-        抓取共用同一套（期号格式/日期/号码范围/重复检测/连续性告警）；导入为 upsert 语义，不会删除已有数据。
+        自动同步失效时的备用通道：下载模板、填入官方开奖号码后导入。校验规则与自动抓取一致；
+        导入只增不删，已有期号会被覆盖更新。
       </p>
       <div className="import-actions">
         <button className="range-tab" onClick={downloadTemplate}>

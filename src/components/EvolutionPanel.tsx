@@ -99,18 +99,18 @@ export default function EvolutionPanel({
   return (
     <section className="card">
       <div className="card-head">
-        <h2>模型匹配与进化引擎</h2>
+        <h2>选号策略实验室</h2>
         <button className="btn" disabled={!evals || busy} onClick={run}>
-          {busy ? '评估中…' : '运行一轮进化评估'}
+          {busy ? '评估中…' : '运行一轮评估'}
         </button>
       </div>
 
       <div className="model-limits">
-        <b>模型局限性说明</b>
+        <b>这是什么</b>
         <p>
-          匹配分反映模型对历史统计特征的贴合程度，不代表预测能力。所有模型的中奖概率与随机选择完全相同——
-          下图随机基准线（超几何期望 {baseline.toFixed(2)}）就是任何策略无法稳定跨越的天花板。
-          进化引擎展示的是"模型会被持续检验和替换"这一机制本身。
+          系统内置 5 个统计选号策略（热号、冷号等），用历史数据逐期检验它们的贴合度，达标晋升、偏离淘汰。
+          匹配分反映的是对历史统计特征的贴合程度，不代表预测能力——图中随机基准线（超几何期望{' '}
+          {baseline.toFixed(2)}）就是任何策略无法稳定跨越的天花板。
         </p>
       </div>
 

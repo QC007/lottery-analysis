@@ -165,19 +165,19 @@ export default function BacktestPanel({
   return (
     <section className="card">
       <div className="card-head">
-        <h2>「如果当时选了这个号」回溯模拟</h2>
+        <h2>模拟选号 · 历史回溯</h2>
         <label className="bt-compare">
           <input
             type="checkbox"
             checked={compareOn}
             onChange={(e) => setCompareOn(e.target.checked)}
           />
-          对比模式
+          对比模式（A/B 两组）
         </label>
       </div>
       <p className="hint">
-        输入一组号码并选择起始范围，模拟「从那天开始每期都花 {config.prize.unitCost}
-        元投注这组号码」的完整资金时间线。
+        ① 在下方选出这组号码 ② 拖动滑块选起始期 ③ 点「开始模拟」：看这组号从那天起每期都花{' '}
+        {config.prize.unitCost} 元买，累计投入多少、中回多少、净盈亏多少。
       </p>
 
       <div className="bt-groups">

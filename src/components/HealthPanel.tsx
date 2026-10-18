@@ -37,11 +37,11 @@ export default function HealthPanel({
   return (
     <section className="card">
       <div className="card-head">
-        <h2>组合健康度诊断</h2>
+        <h2>组合健康度</h2>
       </div>
       <p className="hint">
-        输入一组号码，从奇偶、大小、区间、连号、和值、跨度六个维度评估组合的「均衡性」（历史常见区间取自本地{' '}
-        {sorted.length} 期样本）。
+        选一组号码，从奇偶、大小、区间、连号、和值、跨度六个维度，评估它与历史常见形态的吻合度
+        （历史样本为本地 {sorted.length} 期；均衡 ≠ 更容易中奖）。
       </p>
 
       {config.zones.map((z, zi) => (

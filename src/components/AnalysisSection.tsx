@@ -53,6 +53,7 @@ export default function AnalysisSection({
         <p className="hint">本地数据不足，请等待同步完成。</p>
       ) : (
         <>
+          <p className="hint">统计范围：拖动金色滑块或点两端箭头（±1 期）调整。</p>
           <PeriodSlider
             count={n}
             value={win}

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, lazy, Suspense } from 'react'
+import { useEffect, useMemo, useRef, useState, lazy, Suspense } from 'react'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { enabledLotteries } from './config/lotteries'
 import { db } from './db/db'
@@ -7,15 +7,23 @@ import { isGlobalOff, setGlobalOff } from './services/rational'
 import { useStore } from './store/useStore'
 import SyncBanner from './components/SyncBanner'
 import LotteryTabs from './components/LotteryTabs'
-import LatestDrawCard from './components/LatestDrawCard'
-import HotColdPanel from './components/HotColdPanel'
+import NavTabs, { type TabKey } from './components/NavTabs'
+import HomeTab from './components/HomeTab'
 import HistoryBrowser from './components/HistoryBrowser'
 import RationalTips from './components/RationalTips'
 
-// 分析区（含 ECharts ~500KB）按需加载：首包不包含，滚动到需用时才拉取
+// 各功能分区按需加载（含 ECharts ~500KB）：切到对应分区时才拉取，首屏更轻
 const AnalysisSection = lazy(() => import('./components/AnalysisSection'))
-// 第 4 批功能面板（F-03/F-04/F-05，含 ECharts 雷达/曲线）同样拆包
-const FeaturePanels = lazy(() => import('./components/FeaturePanels'))
+const SimPanels = lazy(() => import('./components/SimPanels'))
+const MorePanels = lazy(() => import('./components/MorePanels'))
+
+/** U-2 各分区的一句话引导：新用户先看这句，就知道这页干嘛、怎么操作 */
+const TAB_DESC: Partial<Record<TabKey, string>> = {
+  trend: '拖动滑块选择统计范围，查看和值走势、号码频率与遗漏情况',
+  sim: '选一组号码，模拟它从过去某期起「每期都买」的历史盈亏（纯属复盘，无预测含义）',
+  history: '按期号逐期查看开奖号码，可按年份筛选、拉取全部历史归档',
+  more: '进阶实验功能与数据维护入口，新手可忽略',
+}
 
 export default function App() {
   const activeLotteryId = useStore((s) => s.activeLotteryId)
@@ -24,6 +32,7 @@ export default function App() {
   const showRationalTip = useStore((s) => s.showRationalTip)
   const rationalOff = useStore((s) => s.rationalOff)
   const setRationalOffState = useStore((s) => s.setRationalOff)
+  const [tab, setTab] = useState<TabKey>('home')
 
   // F-10：加载全局理性提示开关
   useEffect(() => {
@@ -95,31 +104,49 @@ export default function App() {
       )
   }, [setSync, setMeta])
 
+  // U-2：切换功能分区后回到页面顶部，避免新旧内容长度不同停在中段
+  useEffect(() => {
+    window.scrollTo(0, 0)
+  }, [tab])
+
   const latest = sorted[0]
 
   return (
     <main className="app">
-      <h1>彩票分析平台</h1>
-      <p className="disclaimer">
-        本站为彩票历史数据研究工具，所有分析仅供娱乐参考，不构成任何投注建议。
-        彩票开奖为独立随机事件，历史数据不具备预测能力，请理性购彩。
-      </p>
+      <header className="app-header">
+        <h1>彩票分析平台</h1>
+        <p className="tagline">
+          彩票历史数据统计工具 · 数据每日自动更新 · 分析仅供娱乐参考，不构成投注建议，请理性购彩
+        </p>
+      </header>
       <SyncBanner />
       <RationalTips />
       <LotteryTabs />
+      <NavTabs tab={tab} onChange={setTab} />
       {draws === undefined ? (
         <p className="hint">读取本地数据库…</p>
       ) : latest ? (
         <>
-          <LatestDrawCard config={config} draw={latest} />
-          <HotColdPanel config={config} draws={sorted} />
-          <Suspense fallback={<p className="hint">加载分析模块…</p>}>
-            <AnalysisSection config={config} sorted={sorted} />
-          </Suspense>
-          <Suspense fallback={<p className="hint">加载功能面板…</p>}>
-            <FeaturePanels config={config} sorted={sorted} />
-          </Suspense>
-          <HistoryBrowser config={config} sorted={sorted} />
+          {TAB_DESC[tab] && <p className="tab-desc">{TAB_DESC[tab]}</p>}
+          {tab === 'home' && (
+            <HomeTab config={config} sorted={sorted} latest={latest} onGo={setTab} />
+          )}
+          {tab === 'trend' && (
+            <Suspense fallback={<p className="hint">加载分析模块…</p>}>
+              <AnalysisSection config={config} sorted={sorted} />
+            </Suspense>
+          )}
+          {tab === 'sim' && (
+            <Suspense fallback={<p className="hint">加载模拟模块…</p>}>
+              <SimPanels config={config} sorted={sorted} />
+            </Suspense>
+          )}
+          {tab === 'history' && <HistoryBrowser config={config} sorted={sorted} />}
+          {tab === 'more' && (
+            <Suspense fallback={<p className="hint">加载进阶模块…</p>}>
+              <MorePanels config={config} sorted={sorted} />
+            </Suspense>
+          )}
         </>
       ) : (
         <p className="hint">本地暂无「{config.name}」数据，等待同步…</p>
@@ -127,7 +154,7 @@ export default function App() {
       <footer>
         数据由 GitHub Actions 每日抓取官方开奖 · 本地缓存于浏览器 IndexedDB，离线可用
         <button className="rational-toggle" onClick={toggleRational}>
-          理性提示：{rationalOff ? '关' : '开'}
+          理性购彩提醒：{rationalOff ? '已关闭' : '已开启'}
         </button>
       </footer>
     </main>

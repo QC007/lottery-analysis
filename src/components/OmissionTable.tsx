@@ -7,6 +7,7 @@ export default function OmissionTable({ zone }: { zone: ZoneStats }) {
   return (
     <div className="omission-wrap">
       <h3>{zone.name}遗漏</h3>
+      <p className="hint">当前遗漏 = 距上次开出的间隔期数；红色 = 已接近统计窗口内的最大遗漏。</p>
       <table className="omission-table">
         <thead>
           <tr>
