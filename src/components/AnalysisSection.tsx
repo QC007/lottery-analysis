@@ -4,9 +4,9 @@ import { useAnalysis } from '../services/analysis'
 import TrendChart from './TrendChart'
 import FrequencyChart from './FrequencyChart'
 import OmissionTable from './OmissionTable'
-import PeriodSlider from './PeriodSlider'
+import PeriodPicker from './PeriodPicker'
 
-/** 分析区：期数滑动条选窗口 → Worker 计算 → 走势图 + 频率图 + 遗漏表 */
+/** 分析区：期数快捷 chips + 步进按钮选窗口 → Worker 计算 → 走势图 + 频率图 + 遗漏表 */
 export default function AnalysisSection({
   config,
   sorted,
@@ -53,8 +53,8 @@ export default function AnalysisSection({
         <p className="hint">本地数据不足，请等待同步完成。</p>
       ) : (
         <>
-          <p className="hint">统计范围：拖动金色滑块或点两端箭头（±1 期）调整。</p>
-          <PeriodSlider
+          <p className="hint">统计范围：点快捷期数一键选择，或用 −10/−1/+1/+10 平移窗口；图表支持滚轮 / 双指缩放。</p>
+          <PeriodPicker
             count={n}
             value={win}
             format={format}

@@ -4,7 +4,7 @@ import { runBacktest } from '../services/backtest'
 import type { BacktestResult } from '../workers/backtest.worker'
 import NumberPicker, { togglePick } from './NumberPicker'
 import BacktestChart from './BacktestChart'
-import PeriodSlider from './PeriodSlider'
+import PeriodPicker from './PeriodPicker'
 import { isSuppressed, suppress24h } from '../services/rational'
 
 interface Group {
@@ -176,8 +176,8 @@ export default function BacktestPanel({
         </label>
       </div>
       <p className="hint">
-        ① 在下方选出这组号码 ② 拖动滑块选起始期 ③ 点「开始模拟」：看这组号从那天起每期都花{' '}
-        {config.prize.unitCost} 元买，累计投入多少、中回多少、净盈亏多少。
+        ① 在下方选出这组号码 ② 点快捷期数选起点（或用 −10/−1/+1/+10 微调）③ 点「开始模拟」：
+        看这组号从那天起每期都花 {config.prize.unitCost} 元买，累计投入多少、中回多少、净盈亏多少。
       </p>
 
       <div className="bt-groups">
@@ -216,8 +216,9 @@ export default function BacktestPanel({
       </div>
 
       {sorted.length >= 2 && (
-        <PeriodSlider
+        <PeriodPicker
           single
+          chips={[100, 300, 500]}
           count={sorted.length}
           value={[sorted.length - 1 - startIdx, sorted.length - 1]}
           format={(pos) => sorted[sorted.length - 1 - pos]?.drawNo ?? ''}

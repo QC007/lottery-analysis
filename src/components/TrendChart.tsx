@@ -34,6 +34,8 @@ export default function TrendChart({ points }: { points: SumPoint[] }) {
     const chart = chartRef.current
     if (!chart) return
     const avg = points.reduce((s, p) => s + p.sum, 0) / (points.length || 1)
+    // U-3：触屏设备隐藏底部微调滑条（手指难拖），改为 inside 双指捏合缩放；桌面保留滑条
+    const coarse = window.matchMedia('(pointer: coarse)').matches
     chart.setOption({
       tooltip: {
         ...TOOLTIP_DARK,
@@ -43,7 +45,7 @@ export default function TrendChart({ points }: { points: SumPoint[] }) {
           return p ? `${p.drawNo} 期<br/>${p.date}<br/>和值 <b>${p.sum}</b>` : ''
         },
       },
-      grid: { left: 44, right: 16, top: 28, bottom: 60 },
+      grid: { left: 44, right: 16, top: 28, bottom: coarse ? 30 : 60 },
       xAxis: {
         type: 'category',
         data: points.map((p) => p.drawNo),
@@ -56,7 +58,9 @@ export default function TrendChart({ points }: { points: SumPoint[] }) {
         axisLabel: { color: CHART.text, fontSize: 10 },
         splitLine: { lineStyle: { color: CHART.splitLine } },
       },
-      dataZoom: [{ type: 'inside' }, { type: 'slider', ...DATAZOOM_SLIDER_DARK }],
+      dataZoom: coarse
+        ? [{ type: 'inside' }]
+        : [{ type: 'inside' }, { type: 'slider', ...DATAZOOM_SLIDER_DARK }],
       series: [
         {
           type: 'line',

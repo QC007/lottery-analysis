@@ -3,7 +3,7 @@ import type { TabKey } from './NavTabs'
 import LatestDrawCard from './LatestDrawCard'
 import HotColdPanel from './HotColdPanel'
 
-/** U-2 首页分区：最新开奖 + 三个核心功能入口卡 + 冷热速览 */
+/** U-2 首页分区：最新开奖 + 四个核心功能入口卡 + 冷热速览 */
 export default function HomeTab({
   config,
   sorted,
@@ -20,6 +20,10 @@ export default function HomeTab({
     <>
       <LatestDrawCard config={config} draw={latest} />
       <div className="entry-grid">
+        <button className="entry-card" onClick={() => onGo('sim')}>
+          <b>AI 推荐号码</b>
+          <span>多算法融合打分 · 附入选依据</span>
+        </button>
         <button className="entry-card" onClick={() => onGo('trend')}>
           <b>走势分析</b>
           <span>和值走势 · 号码频率 · 遗漏</span>
@@ -33,7 +37,7 @@ export default function HomeTab({
           <span>逐期开奖号码查询</span>
         </button>
       </div>
-      <HotColdPanel config={config} draws={sorted} />
+      <HotColdPanel config={config} sorted={sorted} />
     </>
   )
 }
