@@ -23,10 +23,45 @@ export interface SettingRecord {
   value: unknown
 }
 
+/** 模型池记录（F-06/进化引擎）：一个模型的一次生命周期 */
+export interface ModelRecord {
+  /** 彩种:类型:出生时间戳 */
+  id: string
+  lottery: string
+  /** 模型类型（models.ts 中定义） */
+  type: string
+  name: string
+  /** testing 观察期 / safety 晋级安全期 / active 正式 / deprecated 退役 */
+  status: 'testing' | 'safety' | 'active' | 'deprecated'
+  bornAt: number
+  /** 生命周期起点期号 */
+  bornDrawNo: string
+  /** 退役期号（退役后填充） */
+  retiredDrawNo?: string
+  /** 安全期剩余期数（safety 状态用） */
+  safetyRemaining?: number
+  /** 权重（描述型模型固定 1，展示用） */
+  weight: number
+}
+
+/** 模型生命周期事件（时间胶囊点击详情的数据源） */
+export interface ModelEvent {
+  id?: number
+  lottery: string
+  modelId: string
+  at: number
+  /** 事件发生时的最新期号 */
+  drawNo: string
+  type: 'seeded' | 'promoted' | 'safety_end' | 'deprecated'
+  detail: string
+}
+
 class LotteryDB extends Dexie {
   draws!: Table<DrawRecord, [string, string]>
   syncState!: Table<SyncState, string>
   settings!: Table<SettingRecord, string>
+  modelPool!: Table<ModelRecord, string>
+  modelEvents!: Table<ModelEvent, number>
 
   constructor() {
     super('lap-db')
@@ -40,6 +75,14 @@ class LotteryDB extends Dexie {
       draws: '[lottery+drawNo], lottery, date',
       syncState: 'lottery',
       settings: 'key',
+    })
+    // v3：模型池 + 生命周期事件（进化引擎/F-06）
+    this.version(3).stores({
+      draws: '[lottery+drawNo], lottery, date',
+      syncState: 'lottery',
+      settings: 'key',
+      modelPool: 'id, lottery, status, [lottery+status]',
+      modelEvents: '++id, lottery, modelId, [lottery+modelId]',
     })
   }
 }

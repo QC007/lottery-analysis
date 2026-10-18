@@ -4,6 +4,7 @@ import { runBacktest } from '../services/backtest'
 import type { BacktestResult } from '../workers/backtest.worker'
 import NumberPicker, { togglePick } from './NumberPicker'
 import BacktestChart from './BacktestChart'
+import { isSuppressed, suppress24h } from '../services/rational'
 
 type RangeKey = '100' | '1y' | '3y' | 'all'
 
@@ -118,6 +119,8 @@ export default function BacktestPanel({
   const [range, setRange] = useState<RangeKey>('3y')
   const [running, setRunning] = useState(false)
   const [results, setResults] = useState<{ a: BacktestResult; b?: BacktestResult } | null>(null)
+  // F-10：查看亏损模拟结果后的内联理性提示（24h 防疲劳）
+  const [lossTip, setLossTip] = useState(false)
 
   // 彩种变化时重置选择与结果
   const configId = config.id
@@ -135,6 +138,7 @@ export default function BacktestPanel({
     const startDrawNo = resolveStartDrawNo(sorted, range)
     if (!startDrawNo) return
     setRunning(true)
+    setLossTip(false)
     try {
       const a = await runBacktest(groupA.picks, sorted, startDrawNo, config)
       const b =
@@ -142,6 +146,11 @@ export default function BacktestPanel({
           ? await runBacktest(groupB.picks, sorted, startDrawNo, config)
           : undefined
       setResults({ a, b })
+      const worstNet = Math.min(a.net, b?.net ?? a.net)
+      if (worstNet < 0) {
+        const suppressed = await isSuppressed('lossSim')
+        if (!suppressed) setLossTip(true)
+      }
     } finally {
       setRunning(false)
     }
@@ -235,6 +244,20 @@ export default function BacktestPanel({
             <Summary name={compareOn ? '组合 A' : '模拟结果'} r={results.a} />
             {results.b && <Summary name="组合 B" r={results.b} />}
           </div>
+          {lossTip && (
+            <div className="loss-tip" role="status">
+              <span>历史数据不代表未来，请理性购彩。</span>
+              <button
+                className="rational-btn"
+                onClick={() => void suppress24h('lossSim').then(() => setLossTip(false))}
+              >
+                24h 内不再提示
+              </button>
+              <button className="rational-btn" onClick={() => setLossTip(false)}>
+                知道了
+              </button>
+            </div>
+          )}
           <p className="hint bt-disclaimer">
             基于历史数据的模拟结果，不代表未来表现。彩票开奖为独立随机事件，任何号码组合的长期期望收益均为负，请理性购彩。
           </p>

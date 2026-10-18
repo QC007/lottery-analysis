@@ -572,3 +572,152 @@ body {
 .ai-modal .btn {
   margin-top: 8px;
 }
+
+/* ---- F-10 理性提示 ---- */
+.rational-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding: 10px 14px;
+  border-radius: 6px;
+  background: #fffbe6;
+  border: 1px solid #ffe58f;
+  color: #874d00;
+  font-size: 13px;
+  margin-bottom: 12px;
+}
+.rational-actions {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+.rational-btn {
+  border: none;
+  background: transparent;
+  color: #1d5fd4;
+  font-size: 12px;
+  cursor: pointer;
+  padding: 2px 4px;
+}
+.rational-toggle {
+  margin-left: 12px;
+  border: none;
+  background: transparent;
+  color: #1d5fd4;
+  font-size: 12px;
+  cursor: pointer;
+  padding: 0;
+}
+.loss-tip {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin: 10px 0;
+  padding: 8px 12px;
+  border-radius: 4px;
+  background: #fffbe6;
+  border: 1px solid #ffe58f;
+  color: #874d00;
+  font-size: 13px;
+}
+
+/* ---- F-06 模型匹配 / 进化时间胶囊 ---- */
+.model-limits {
+  border: 1px solid #ffe1d6;
+  background: #fff7f4;
+  border-radius: 6px;
+  padding: 10px 14px;
+  margin-bottom: 12px;
+  font-size: 13px;
+  color: #4e5969;
+}
+.model-limits b {
+  color: #d4380d;
+  display: block;
+  margin-bottom: 4px;
+}
+.evo-log ul {
+  margin: 4px 0 0 18px;
+  font-size: 13px;
+  color: #237804;
+  line-height: 1.9;
+}
+.capsule-track {
+  display: flex;
+  gap: 3px;
+  align-items: stretch;
+  min-height: 52px;
+  overflow-x: auto;
+  padding: 6px 0;
+}
+.capsule {
+  border: none;
+  border-radius: 26px;
+  color: #fff;
+  font-size: 11px;
+  cursor: pointer;
+  padding: 6px 10px;
+  min-width: 64px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  overflow: hidden;
+  white-space: nowrap;
+}
+.capsule em {
+  font-style: normal;
+  font-size: 10px;
+  opacity: 0.85;
+}
+.capsule.is-safety {
+  box-shadow: inset 0 0 0 2px #fff;
+}
+.capsule.is-selected {
+  outline: 2px solid #1d2129;
+  outline-offset: 1px;
+}
+.capsule-detail {
+  margin-top: 10px;
+  border: 1px solid #e5e6eb;
+  border-radius: 6px;
+  padding: 10px 14px;
+  background: #f7f8fa;
+}
+.capsule-detail h4 {
+  font-size: 13px;
+  color: #1d2129;
+  margin-bottom: 4px;
+}
+.capsule-detail ul {
+  margin: 6px 0 0 18px;
+  font-size: 12px;
+  color: #4e5969;
+  line-height: 1.9;
+}
+
+/* ---- 手动导入 ---- */
+.import-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+  margin: 8px 0;
+}
+.import-text {
+  width: 100%;
+  border: 1px solid #e5e6eb;
+  border-radius: 4px;
+  padding: 8px 10px;
+  font-size: 12px;
+  font-family: Consolas, monospace;
+  resize: vertical;
+}
+.import-result {
+  border-top: 1px dashed #e5e6eb;
+  padding-top: 8px;
+}
