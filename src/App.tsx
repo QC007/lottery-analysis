@@ -9,7 +9,7 @@ import SyncBanner from './components/SyncBanner'
 import LotteryTabs from './components/LotteryTabs'
 import LatestDrawCard from './components/LatestDrawCard'
 import HotColdPanel from './components/HotColdPanel'
-import HistoryPanel from './components/HistoryPanel'
+import HistoryBrowser from './components/HistoryBrowser'
 import RationalTips from './components/RationalTips'
 
 // 分析区（含 ECharts ~500KB）按需加载：首包不包含，滚动到需用时才拉取
@@ -119,7 +119,7 @@ export default function App() {
           <Suspense fallback={<p className="hint">加载功能面板…</p>}>
             <FeaturePanels config={config} sorted={sorted} />
           </Suspense>
-          <HistoryPanel config={config} localCount={sorted.length} />
+          <HistoryBrowser config={config} sorted={sorted} />
         </>
       ) : (
         <p className="hint">本地暂无「{config.name}」数据，等待同步…</p>
