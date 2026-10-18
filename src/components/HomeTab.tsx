@@ -28,9 +28,9 @@ export default function HomeTab({
           <b>走势分析</b>
           <span>和值走势 · 号码频率 · 遗漏</span>
         </button>
-        <button className="entry-card" onClick={() => onGo('sim')}>
-          <b>模拟选号</b>
-          <span>测测这组号码的历史盈亏</span>
+        <button className="entry-card" onClick={() => onGo('history')}>
+          <b>自选号码分析</b>
+          <span>这组号码历史表现如何</span>
         </button>
         <button className="entry-card" onClick={() => onGo('history')}>
           <b>开奖历史</b>

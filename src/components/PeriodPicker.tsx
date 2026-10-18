@@ -1,12 +1,15 @@
+import { useRef, useState } from 'react'
+
 /**
- * U-3 触控友好期数选择器（替代 U-1c PeriodSlider）
- *
- * 设计依据：手机手指操作 —— 大触控目标（≥40px）、无精细拖拽：
+ * U-4 期数选择器（三合一触控控件）
  *  ① 快捷范围 chips：一键选「近 N 期 / 全部」（锚定最新一期）
- *  ② 大步进按钮组：−10 / −1 / +1 / +10 平移窗口（dual 模式整体平移保持窗口大小；
+ *  ② 自定义滑动条：轨道任意位置按下，距触点最近的手柄吸附到触点并继续拖动
+ *     —— 解决 U-1c 原生双 range「上层 input 拦截点击、双手柄接近时点不中目标手柄」的缺陷；
+ *     整条轨道 44px 高均为触控热区，触屏 touch-action:none 防止拖动时页面滚动
+ *  ③ 大步进按钮组：−10 / −1 / +1 / +10 平移窗口（dual 模式整体平移保持窗口大小；
  *     single 模式仅移动起点，终点固定为最新一期）
  *
- * 位置语义与 PeriodSlider 一致：0 = 最旧，count-1 = 最新
+ * 位置语义与 U-1c PeriodSlider 一致：0 = 最旧，count-1 = 最新
  */
 export default function PeriodPicker({
   count,
@@ -32,7 +35,9 @@ export default function PeriodPicker({
   onChange: (v: [number, number]) => void
 }) {
   const max = count - 1
-  if (max < minGap) return null
+  const trackRef = useRef<HTMLDivElement>(null)
+  const [dragging, setDragging] = useState<'lo' | 'hi' | null>(null)
+
   const [lo, hi] = value
   const size = hi - lo + 1
 
@@ -52,6 +57,76 @@ export default function PeriodPicker({
       if (d !== 0) onChange([lo + d, hi + d])
     }
   }
+
+  /* ---------------- 滑动条 ---------------- */
+
+  const pct = (p: number) => `${(p / max) * 100}%`
+
+  /** 触点 clientX → 位置（0..max，四舍五入取整） */
+  const posFromClientX = (clientX: number) => {
+    const el = trackRef.current
+    if (!el) return 0
+    const r = el.getBoundingClientRect()
+    const ratio = r.width > 0 ? (clientX - r.left) / r.width : 0
+    return Math.max(0, Math.min(max, Math.round(ratio * max)))
+  }
+
+  /** 把手柄移动到指定位置（自动夹取边界与 minGap；无变化不上报） */
+  const applyPos = (which: 'lo' | 'hi', p: number) => {
+    if (single || which === 'lo') {
+      const v = Math.max(0, Math.min(p, hi - minGap))
+      if (v !== lo) onChange([v, hi])
+    } else {
+      const v = Math.min(max, Math.max(p, lo + minGap))
+      if (v !== hi) onChange([lo, v])
+    }
+  }
+
+  /** 距触点最近的手柄（single 模式唯一手柄）；等距时取左柄 */
+  const nearestHandle = (p: number): 'lo' | 'hi' => {
+    if (single) return 'lo'
+    return Math.abs(p - lo) <= Math.abs(p - hi) ? 'lo' : 'hi'
+  }
+
+  const onPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (e.pointerType === 'mouse' && e.button !== 0) return
+    e.preventDefault()
+    const which = nearestHandle(posFromClientX(e.clientX))
+    setDragging(which)
+    // 最近手柄吸附到触点（点轨道即移动最近手柄）
+    applyPos(which, posFromClientX(e.clientX))
+    try {
+      e.currentTarget.setPointerCapture(e.pointerId)
+    } catch {
+      /* 极少数环境不支持捕获，拖动仍可用，只是滑出轨道会中断 */
+    }
+  }
+
+  const onPointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (!dragging) return
+    applyPos(dragging, posFromClientX(e.clientX))
+  }
+
+  const endDrag = (e: React.PointerEvent<HTMLDivElement>) => {
+    setDragging(null)
+    try {
+      if (e.currentTarget.hasPointerCapture(e.pointerId)) {
+        e.currentTarget.releasePointerCapture(e.pointerId)
+      }
+    } catch {
+      /* 已释放 */
+    }
+  }
+
+  /** 键盘微调（无障碍）：←/→ 移动 1 期 */
+  const onHandleKey = (e: React.KeyboardEvent, which: 'lo' | 'hi') => {
+    const step = e.key === 'ArrowLeft' ? -1 : e.key === 'ArrowRight' ? 1 : 0
+    if (!step) return
+    e.preventDefault()
+    applyPos(which, (which === 'lo' ? lo : hi) + step)
+  }
+
+  if (max < minGap) return null
 
   const chipActive = (n: number) => hi === max && size === Math.min(n, count)
   const allActive = lo === 0 && hi === max
@@ -81,6 +156,45 @@ export default function PeriodPicker({
           全部
         </button>
       </div>
+
+      <div
+        ref={trackRef}
+        className="pp-slider"
+        onPointerDown={onPointerDown}
+        onPointerMove={onPointerMove}
+        onPointerUp={endDrag}
+        onPointerCancel={endDrag}
+      >
+        <div className="pp-rail" />
+        <div className="pp-fill" style={{ left: pct(lo), width: pct(hi - lo) }} />
+        <div
+          className={`pp-handle${dragging === 'lo' ? ' is-drag' : ''}`}
+          style={{ left: pct(lo) }}
+          role="slider"
+          tabIndex={0}
+          aria-label={single ? '起点期' : '起点期（较早）'}
+          aria-valuemin={0}
+          aria-valuemax={hi - minGap}
+          aria-valuenow={lo}
+          aria-valuetext={format(lo)}
+          onKeyDown={(e) => onHandleKey(e, 'lo')}
+        />
+        {!single && (
+          <div
+            className={`pp-handle${dragging === 'hi' ? ' is-drag' : ''}`}
+            style={{ left: pct(hi) }}
+            role="slider"
+            tabIndex={0}
+            aria-label="终点期（较新）"
+            aria-valuemin={lo + minGap}
+            aria-valuemax={max}
+            aria-valuenow={hi}
+            aria-valuetext={format(hi)}
+            onKeyDown={(e) => onHandleKey(e, 'hi')}
+          />
+        )}
+      </div>
+
       <div className="pp-stepper">
         <div className="pp-btns">
           <button

@@ -1017,6 +1017,89 @@ body {
   color: var(--text-2);
 }
 
+/* ---- U-4 期数滑动条（自定义手柄：触点吸附最近手柄，整轨 44px 热区） ---- */
+.pp-slider {
+  position: relative;
+  height: 44px;
+  margin: 4px 0 2px;
+  touch-action: none; /* 拖动时禁止页面滚动/缩放手势接管 */
+  user-select: none;
+  -webkit-user-select: none;
+  cursor: pointer;
+}
+.pp-rail {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  height: 6px;
+  transform: translateY(-50%);
+  border-radius: 3px;
+  background: var(--border);
+}
+.pp-fill {
+  position: absolute;
+  top: 50%;
+  height: 6px;
+  transform: translateY(-50%);
+  border-radius: 3px;
+  background: linear-gradient(90deg, var(--gold-deep), var(--gold));
+}
+.pp-handle {
+  position: absolute;
+  top: 50%;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--panel);
+  border: 3px solid var(--gold);
+  transform: translate(-50%, -50%);
+  box-shadow: 0 1px 5px rgba(0, 0, 0, 0.55);
+}
+.pp-handle.is-drag {
+  border-color: var(--blue);
+  z-index: 2;
+}
+.pp-handle:focus-visible {
+  outline: 2px solid var(--blue);
+  outline-offset: 2px;
+}
+
+/* ---- U-4 自选号码分析 ---- */
+.mn-hits {
+  max-height: 220px;
+  overflow-y: auto;
+  margin-top: 8px;
+  border: 1px solid var(--border-soft);
+  border-radius: 8px;
+}
+.mn-hit-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 10px;
+  border-bottom: 1px solid var(--border-soft);
+  font-size: 13px;
+}
+.mn-hit-row:last-child {
+  border-bottom: none;
+}
+.mn-hit-row .mn-date {
+  color: var(--text-2);
+  font-size: 12px;
+}
+.mn-hit-row .mn-tier {
+  margin-left: auto;
+  color: var(--gold);
+  font-weight: 600;
+  white-space: nowrap;
+}
+.mn-table .ball {
+  width: 26px;
+  height: 26px;
+  font-size: 12px;
+}
+
 /* ---- U-3 AI 推荐号码 ---- */
 .rec-controls {
   display: flex;
@@ -1188,6 +1271,10 @@ select option {
   .pp-chip {
     min-height: 40px;
     padding: 8px 16px;
+  }
+  .pp-handle {
+    width: 30px;
+    height: 30px;
   }
   .rec-cell {
     width: 48px;

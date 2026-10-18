@@ -53,7 +53,7 @@ export default function AnalysisSection({
         <p className="hint">本地数据不足，请等待同步完成。</p>
       ) : (
         <>
-          <p className="hint">统计范围：点快捷期数一键选择，或用 −10/−1/+1/+10 平移窗口；图表支持滚轮 / 双指缩放。</p>
+          <p className="hint">统计范围：点快捷期数一键选择、拖动滑块或用 −10/−1/+1/+10 平移窗口；图表支持滚轮 / 双指缩放。</p>
           <PeriodPicker
             count={n}
             value={win}

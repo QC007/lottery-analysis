@@ -4,6 +4,7 @@ import { Ball } from './Ball'
 import { db } from '../db/db'
 import { ensureYears } from '../services/sync'
 import { useStore } from '../store/useStore'
+import MyNumbersPanel from './MyNumbersPanel'
 
 const PAGE = 20
 
@@ -63,7 +64,9 @@ export default function HistoryBrowser({
   }
 
   return (
-    <section className="card">
+    <>
+      <MyNumbersPanel config={config} sorted={sorted} />
+      <section className="card">
       <div className="card-head">
         <h2>历史开奖</h2>
         <select className="hist-select" value={year} onChange={(e) => { setYear(e.target.value); setLimit(PAGE) }}>
@@ -113,6 +116,7 @@ export default function HistoryBrowser({
           加载更多（剩余 {filtered.length - visible.length} 期）
         </button>
       )}
-    </section>
+      </section>
+    </>
   )
 }

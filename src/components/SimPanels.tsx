@@ -1,11 +1,12 @@
 import type { Draw, LotteryConfig } from '../config/lotteries'
 import RecommendPanel from './RecommendPanel'
-import BacktestPanel from './BacktestPanel'
 import HealthPanel from './HealthPanel'
+// U-4：历史回溯模拟器（模拟选号）暂时隐藏，代码保留，评估后决定去留
+// import BacktestPanel from './BacktestPanel'
 
 /**
- * U-2 模拟选号分区（U-3 AI 推荐 + F-03 历史回溯 + F-04 组合健康度）
- * 都是「选号/生成号码 → 出结果」场景，聚合为一个 lazy 包
+ * U-2 模拟选号分区（U-3 AI 推荐 + F-04 组合健康度）
+ * U-4：F-03 历史回溯模拟器暂时隐藏（组件文件保留，取消挂载）
  */
 export default function SimPanels({
   config,
@@ -18,7 +19,7 @@ export default function SimPanels({
   return (
     <>
       <RecommendPanel config={config} sorted={sorted} />
-      <BacktestPanel config={config} sorted={sorted} />
+      {/* <BacktestPanel config={config} sorted={sorted} /> */}
       <HealthPanel config={config} sorted={sorted} />
     </>
   )
