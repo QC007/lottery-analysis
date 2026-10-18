@@ -26,7 +26,7 @@ export const MODEL_DEFS: ModelDef[] = [
   { type: 'cold', name: '冷号回补模型', desc: '选当前遗漏期数最长的 6 个主区号码' },
 ]
 
-/** 走前回测的期数（评估窗口总长） */
+/** 走前回测的默认期数（评估窗口总长）；U-5 起可选，最大 = 全部本地历史 */
 export const EVAL_PERIODS = 200
 /** 进化评估窗口（期）——需求 13.4：晋升/淘汰均按"连续 10 窗口"判定 */
 export const WINDOW = 10
@@ -129,14 +129,18 @@ function pickFor(
     .sort((a, b) => a - b)
 }
 
-/** 对最近 EVAL_PERIODS 期做走前回测（sorted 为期号降序全部本地数据） */
-export function evaluateModels(config: LotteryConfig, sorted: Draw[]): ModelEval[] {
+/** 对最近 maxPeriods 期做走前回测（sorted 为期号降序全部本地数据；maxPeriods 默认 200，可传 sorted.length 评估全部历史） */
+export function evaluateModels(
+  config: LotteryConfig,
+  sorted: Draw[],
+  maxPeriods: number = EVAL_PERIODS,
+): ModelEval[] {
   const zone = config.zones[0]
   const E = baselineExpected(zone)
 
-  // 参与评估的目标期下标：0..EVAL_PERIODS-1（降序），时间从旧到新评估窗口
+  // 参与评估的目标期下标：0..maxPeriods-1（降序），时间从旧到新评估窗口
   const targetIdx: number[] = []
-  for (let i = 0; i < Math.min(EVAL_PERIODS, sorted.length); i++) {
+  for (let i = 0; i < Math.min(maxPeriods, sorted.length); i++) {
     if (sorted.length - (i + 1) >= MIN_HIST) targetIdx.push(i)
   }
   // 时间升序排列（评估窗口 0 = 最旧）

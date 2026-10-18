@@ -1,10 +1,10 @@
-/** U-2 功能分区导航：开奖 / 走势分析 / 模拟选号 / 历史 / 更多 */
+/** U-2 功能分区导航：开奖 / 走势分析 / 选号工具 / 历史 / 更多 */
 export type TabKey = 'home' | 'trend' | 'sim' | 'history' | 'more'
 
 const TABS: { key: TabKey; label: string }[] = [
   { key: 'home', label: '开奖' },
   { key: 'trend', label: '走势分析' },
-  { key: 'sim', label: '模拟选号' },
+  { key: 'sim', label: '选号工具' },
   { key: 'history', label: '历史' },
   { key: 'more', label: '更多' },
 ]

@@ -5,7 +5,7 @@ import HealthPanel from './HealthPanel'
 // import BacktestPanel from './BacktestPanel'
 
 /**
- * U-2 模拟选号分区（U-3 AI 推荐 + F-04 组合健康度）
+ * U-2 选号工具分区（U-3 AI 统计选号 + F-04 组合健康度）
  * U-4：F-03 历史回溯模拟器暂时隐藏（组件文件保留，取消挂载）
  */
 export default function SimPanels({

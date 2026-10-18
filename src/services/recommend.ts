@@ -1,7 +1,7 @@
 import type { Draw, LotteryConfig } from '../config/lotteries'
 
 /**
- * U-3 AI 推荐号码（本地多算法融合 · 诚实口径）
+ * U-3 AI 统计选号（本地多算法融合 · 诚实口径）
  *
  * 融合 4 类算法对用户自选历史窗口内的号码打分，再按分数做「加权不放回抽样」：
  *  ① 全窗口频率统计（权重 35%）：窗口内出现次数越多分越高
@@ -10,7 +10,7 @@ import type { Draw, LotteryConfig } from '../config/lotteries'
  *  ④ 随机扰动（权重 10%）：每注重新摇噪声，避免结果死板雷同
  *
  * 理性原则：开奖为独立随机事件，任何统计打分都不能提高中奖概率——
- * 本功能是多算法统计游戏，推荐与机选的期望完全相同，面板中必须如实告知用户。
+ * 本功能是多算法统计游戏，生成结果与机选的期望完全相同，面板中必须如实告知用户。
  */
 
 /** 单注中单个号码及其入选依据 */
@@ -51,7 +51,7 @@ function normalize(values: number[]): number[] {
 }
 
 /**
- * 生成推荐号码
+ * 生成选号结果
  * @param windowDraws 用户自选窗口内的开奖数据（期号降序，newest first）
  * @param betCount 注数（1~5）
  */

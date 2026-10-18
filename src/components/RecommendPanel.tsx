@@ -9,9 +9,9 @@ const BET_CHIPS = [1, 2, 3, 4, 5]
 const MIN_WINDOW = 10
 
 /**
- * U-3 AI 推荐号码
+ * U-3 AI 统计选号
  * 用户主动点击生成：选历史期数范围 + 注数（1~5）→ 多算法融合打分 → 加权抽样
- * 每个号码附入选依据，整体附推算原理与诚实免责声明
+ * 每个号码附入选依据，整体附统计方法说明与诚实免责声明
  */
 export default function RecommendPanel({
   config,
@@ -63,10 +63,10 @@ export default function RecommendPanel({
   return (
     <section className="card">
       <div className="card-head">
-        <h2>AI 推荐号码</h2>
+        <h2>AI 统计选号</h2>
       </div>
       <p className="hint">
-        ① 选历史期数范围 ② 选注数 ③ 点「生成推荐」：频率、热度、遗漏回补等多种统计
+        ① 选历史期数范围 ② 选注数 ③ 点「生成号码」：频率、热度、遗漏回补等多种统计
         算法融合打分后加权抽样，每个号码下方附入选依据。
       </p>
 
@@ -96,7 +96,7 @@ export default function RecommendPanel({
           ))}
         </div>
         <button className="btn" disabled={!canGenerate} onClick={generate}>
-          生成推荐
+          生成号码
         </button>
       </div>
       {!canGenerate && (
@@ -124,14 +124,14 @@ export default function RecommendPanel({
             </div>
           ))}
           <p className="hint rec-principle">
-            <b>推算原理</b>：基于你选定的 {result.windowSize} 期历史（{result.fromNo} ~{' '}
+            <b>统计方法说明</b>：基于你选定的 {result.windowSize} 期历史（{result.fromNo} ~{' '}
             {result.toNo}），对全部号码做 4 类算法打分——① 全窗口频率统计（权重 35%）
             ② 近 {result.recentSize} 期热度（权重 30%）③ 冷号遗漏回补（权重 25%）
             ④ 随机扰动（权重 10%）；加权合成 0~1 综合分后按分数做「不放回抽样」逐注生成。
             号码下方标签为该号码得分最高的因子，即入选主因。
           </p>
           <p className="hint bt-disclaimer">
-            重要：每期开奖相互独立，历史统计不改变任何号码的中奖概率——以上推荐与机选期望完全相同，
+            重要：每期开奖相互独立，历史统计不改变任何号码的中奖概率——以上号码与机选期望完全相同，
             仅为多算法统计游戏，不构成投注建议，请理性购彩。
           </p>
         </>

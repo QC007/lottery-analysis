@@ -21,7 +21,7 @@ export default function HomeTab({
       <LatestDrawCard config={config} draw={latest} />
       <div className="entry-grid">
         <button className="entry-card" onClick={() => onGo('sim')}>
-          <b>AI 推荐号码</b>
+          <b>AI 统计选号</b>
           <span>多算法融合打分 · 附入选依据</span>
         </button>
         <button className="entry-card" onClick={() => onGo('trend')}>

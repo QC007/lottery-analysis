@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import type { Draw, LotteryConfig } from '../config/lotteries'
 import { db, type ModelEvent, type ModelRecord } from '../db/db'
-import { baselineExpected, evaluateModels, type ModelEval } from '../services/models'
+import { baselineExpected, EVAL_PERIODS, evaluateModels, type ModelEval } from '../services/models'
 import { ensurePoolSeeded, runEvolution, type Transition } from '../services/evolution'
 import ModelMatchChart from './ModelMatchChart'
 
@@ -18,6 +18,9 @@ const STATUS_COLOR: Record<ModelRecord['status'], string> = {
   deprecated: '#9aa0a6',
 }
 
+/** 回测期数快捷选项（U-5：上限由 200 放开到全部本地历史） */
+const PERIOD_CHIPS = [200, 500, 1000]
+
 /** F-06 模型进化时间胶囊 + 本地模型匹配（走前回测 + 随机基准线） */
 export default function EvolutionPanel({
   config,
@@ -27,7 +30,13 @@ export default function EvolutionPanel({
   /** 期号降序的全部本地数据 */
   sorted: Draw[]
 }) {
-  const [evals, setEvals] = useState<ModelEval[] | null>(null)
+  // U-5：回测期数可选（默认 200，最大全部历史）；计算期间保留旧结果避免面板抖动
+  const [periods, setPeriods] = useState(EVAL_PERIODS)
+  const [evalState, setEvalState] = useState<{
+    configId: string
+    periods: number
+    evals: ModelEval[]
+  } | null>(null)
   const [pool, setPool] = useState<ModelRecord[]>([])
   const [selected, setSelected] = useState<ModelRecord | null>(null)
   const [events, setEvents] = useState<ModelEvent[]>([])
@@ -38,20 +47,24 @@ export default function EvolutionPanel({
   const baseline = useMemo(() => baselineExpected(config.zones[0]), [config])
   const enough = sorted.length >= 40
 
-  // 彩种切换：重算 + 确保模型池已播种
+  const evals = evalState?.configId === configId ? evalState.evals : null
+  const computing = enough && (!evals || evalState?.periods !== periods)
+
+  // 彩种切换/期数切换：异步重算（全量回测耗时较长，setTimeout 让出主线程先渲染）
   useEffect(() => {
-    setEvals(null)
-    setPool([])
     setSelected(null)
     setEvents([])
     setLog([])
     if (!enough) return
-    const evals_ = evaluateModels(config, sorted)
-    setEvals(evals_)
-    void ensurePoolSeeded(configId, sorted[0].drawNo).then(() =>
-      db.modelPool.where('lottery').equals(configId).toArray().then(setPool),
-    )
-  }, [configId, config, sorted, enough])
+    const timer = setTimeout(() => {
+      const evals_ = evaluateModels(config, sorted, periods)
+      setEvalState({ configId, periods, evals: evals_ })
+      void ensurePoolSeeded(configId, sorted[0].drawNo).then(() =>
+        db.modelPool.where('lottery').equals(configId).toArray().then(setPool),
+      )
+    }, 30)
+    return () => clearTimeout(timer)
+  }, [configId, config, sorted, enough, periods])
 
   const openDetail = (rec: ModelRecord) => {
     setSelected(rec)
@@ -63,7 +76,7 @@ export default function EvolutionPanel({
   }
 
   const run = async () => {
-    if (!evals) return
+    if (!evals || computing) return
     setBusy(true)
     try {
       const transitions = await runEvolution(configId, sorted, evals)
@@ -100,7 +113,7 @@ export default function EvolutionPanel({
     <section className="card">
       <div className="card-head">
         <h2>选号策略实验室</h2>
-        <button className="btn" disabled={!evals || busy} onClick={run}>
+        <button className="btn" disabled={!evals || busy || computing} onClick={run}>
           {busy ? '评估中…' : '运行一轮评估'}
         </button>
       </div>
@@ -114,12 +127,35 @@ export default function EvolutionPanel({
         </p>
       </div>
 
+      {enough && (
+        <div className="pp-chips" role="group" aria-label="回测期数范围">
+          {PERIOD_CHIPS.filter((m) => m < sorted.length).map((m) => (
+            <button
+              key={m}
+              type="button"
+              className={`pp-chip${periods === m ? ' is-active' : ''}`}
+              onClick={() => setPeriods(m)}
+            >
+              近{m}期
+            </button>
+          ))}
+          <button
+            type="button"
+            className={`pp-chip${periods >= sorted.length ? ' is-active' : ''}`}
+            onClick={() => setPeriods(sorted.length)}
+          >
+            全部
+          </button>
+        </div>
+      )}
+
       {!enough ? (
         <p className="hint">本地数据不足 40 期，请先同步历史数据后再使用模型匹配。</p>
       ) : !evals ? (
         <p className="hint">回测计算中…</p>
       ) : (
         <>
+          {computing && <p className="hint">正在按新期数范围重新回测…</p>}
           <h3 className="sub-title">走前回测（每期仅用当期之前数据，共 {evals[0]?.periods ?? 0} 期）</h3>
           <ModelMatchChart evals={evals} baseline={baseline} />
           <table className="omission-table">

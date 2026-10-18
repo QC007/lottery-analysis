@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import type { Draw, LotteryConfig } from '../config/lotteries'
 import type { AnalysisResult, AnalyzeRequest } from '../workers/analysis.worker'
 
@@ -36,22 +36,38 @@ export function analyze(draws: Draw[], config: LotteryConfig): Promise<AnalysisR
   })
 }
 
-/** React Hook：输入变化自动重算（异步，不阻塞 UI） */
+/**
+ * React Hook：输入变化自动重算（异步，不阻塞 UI）
+ * U-5 防抖动：stale-while-revalidate —— 新结果返回前保留上一次结果，
+ * 图表不卸载、页面高度稳定；同时在途请求期间的新输入合并为一次尾随重算，
+ * 避免拖动滑动条时 Worker 消息积压。
+ * 彩种切换时返回 null（不同彩种的结果不可混用）。
+ */
 export function useAnalysis(
   draws: Draw[],
   config: LotteryConfig,
 ): AnalysisResult | null {
-  const [result, setResult] = useState<AnalysisResult | null>(null)
+  const [state, setState] = useState<{ configId: string; result: AnalysisResult } | null>(null)
+  const busyRef = useRef(false)
+  const latestRef = useRef<{ draws: Draw[]; config: LotteryConfig }>({ draws, config })
+
   useEffect(() => {
-    let cancelled = false
-    setResult(null)
-    if (draws.length === 0) return
-    analyze(draws, config).then((r) => {
-      if (!cancelled) setResult(r)
-    })
-    return () => {
-      cancelled = true
+    latestRef.current = { draws, config }
+    if (draws.length === 0 || busyRef.current) return
+    busyRef.current = true
+    const run = () => {
+      const { draws: d, config: c } = latestRef.current
+      void analyze(d, c).then((r) => {
+        setState({ configId: c.id, result: r })
+        if (latestRef.current.draws !== d || latestRef.current.config !== c) {
+          run() // 计算期间输入又变了：用最新输入尾随重算一次
+        } else {
+          busyRef.current = false
+        }
+      })
     }
+    run()
   }, [draws, config])
-  return result
+
+  return state?.configId === config.id ? state.result : null
 }
