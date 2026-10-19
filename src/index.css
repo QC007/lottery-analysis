@@ -222,18 +222,18 @@ body {
   background: transparent;
   color: var(--text-2);
   font-size: var(--fs-sm);
-  padding: 8px 4px 10px;
+  padding: 6px 4px 8px; /* U-15 批④：导航条 64px 过厚抢眼，收敛回 46px 档 */
   cursor: pointer;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
-  min-height: 52px;
+  gap: 3px;
+  min-height: 46px;
 }
 .fn-tab svg {
   display: block;
-  width: 18px;
-  height: 18px;
+  width: 16px;
+  height: 16px;
 }
 .fn-tab.is-active {
   color: var(--gold-bright);
@@ -429,7 +429,7 @@ body {
   letter-spacing: 0.3px;
 }
 .hero-stat-num {
-  font-size: 22px; /* U-15 批②：hero 数据大数字再提一档，主角层级 */
+  font-size: 20px; /* U-15 批④：22 与 h1 同大导致主次不分，回落一档 */
   font-weight: 700;
   letter-spacing: 0.3px;
   color: var(--gold-bright);
@@ -838,17 +838,17 @@ body {
 }
 .picker-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(38px, 1fr)); /* U-15 批③：格子加大，触控更稳 */
+  grid-template-columns: repeat(auto-fill, minmax(36px, 1fr));
   gap: 6px;
 }
 .pick-ball {
   position: relative;
-  height: 38px; /* U-15 批③：32→38px，桌面触控底线 */
+  height: 34px; /* U-15 批④：38 逼近 hero 开奖球 40px 主次倒挂，回落 */
   border-radius: 50%;
   border: 1px solid var(--border);
   background: var(--panel-2);
   color: var(--text-2);
-  font-size: var(--fs-base);
+  font-size: var(--fs-md);
   cursor: pointer;
   padding: 0;
   overflow: hidden;
@@ -2071,12 +2071,12 @@ textarea:focus {
     padding: 16px;
   }
   .card-hero .ball {
-    width: 34px;
-    height: 34px;
+    width: 36px; /* U-15 批④：手机端 hero 球 34→36，保持对选号球（36）的主角层级 */
+    height: 36px;
     font-size: var(--fs-base);
   }
   .hero-stat-num {
-    font-size: 20px;
+    font-size: 18px;
   }
   .hero-stat + .hero-stat {
     margin-left: 12px;
@@ -2099,9 +2099,9 @@ textarea:focus {
   .rec-cell {
     width: 48px;
   }
-  /* U-15 批③：手机端触控目标补足 44px */
+  /* U-15 批④：手机端选号球 36px——与 hero 球（36→更大视觉权重）层级拉开 */
   .pick-ball {
-    height: 44px;
+    height: 36px;
   }
   .btn {
     min-height: 44px;
