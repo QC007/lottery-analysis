@@ -10,11 +10,11 @@ import LotteryTabs from './components/LotteryTabs'
 import NavTabs, { type TabKey } from './components/NavTabs'
 import GlobalDataBar from './components/GlobalDataBar'
 import HomeTab from './components/HomeTab'
-import HistoryBrowser from './components/HistoryBrowser'
 import RationalTips from './components/RationalTips'
 
-// 各功能分区按需加载（含 ECharts ~500KB）：切到对应分区时才拉取，首屏更轻
+// 各功能分区按需加载（含 ECharts ~500KB、U-14 framer-motion 弹层）：切到对应分区时才拉取，首屏更轻
 const AnalysisSection = lazy(() => import('./components/AnalysisSection'))
+const HistoryBrowser = lazy(() => import('./components/HistoryBrowser'))
 const SimPanels = lazy(() => import('./components/SimPanels'))
 const MorePanels = lazy(() => import('./components/MorePanels'))
 
@@ -146,7 +146,11 @@ export default function App() {
                 <SimPanels config={config} sorted={sorted} />
               </Suspense>
             )}
-            {tab === 'history' && <HistoryBrowser config={config} sorted={sorted} />}
+            {tab === 'history' && (
+              <Suspense fallback={<p className="loading">加载历史模块…</p>}>
+                <HistoryBrowser config={config} sorted={sorted} />
+              </Suspense>
+            )}
             {tab === 'more' && (
               <Suspense fallback={<p className="loading">加载进阶模块…</p>}>
                 <MorePanels config={config} sorted={sorted} />

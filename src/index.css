@@ -604,6 +604,26 @@ body {
     transform: scale(1.15);
   }
 }
+/* U-14 Lottie 冷热号主体动效（懒加载 FxLottie，叠加在上方 CSS 光晕之上、球体之下） */
+.fx-lottie {
+  position: absolute;
+  z-index: 0;
+  pointer-events: none;
+}
+/* 热号：火舌在球体后上方升腾（cell 已 overflow:hidden，尺寸内收避免裁切突兀） */
+.fx-flame {
+  top: 1px;
+  left: 50%;
+  width: 30px;
+  height: 34px;
+  transform: translateX(-50%);
+  opacity: 0.9;
+}
+/* 冷号：冰晶在球体后整格旋转 */
+.fx-frost {
+  inset: -2px;
+  opacity: 0.8;
+}
 .tag-hot,
 .tag-cold {
   font-style: normal;
@@ -1617,10 +1637,6 @@ body {
   background: rgba(1, 4, 9, 0.66);
   backdrop-filter: blur(3px);
   -webkit-backdrop-filter: blur(3px);
-  animation: overlay-fade 0.18s var(--ease) both;
-}
-.overlay-mask.is-closing {
-  animation: overlay-fade-out 0.19s var(--ease) both;
 }
 .overlay-panel {
   position: relative;
@@ -1633,7 +1649,6 @@ body {
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-overlay);
   overflow: hidden;
-  animation: overlay-pop 0.2s var(--ease) both;
 }
 .overlay-panel::before {
   content: '';
@@ -1644,9 +1659,6 @@ body {
   height: 1px;
   background: var(--grad-line);
   pointer-events: none;
-}
-.overlay-panel.is-closing {
-  animation: overlay-pop-out 0.19s var(--ease) both;
 }
 .overlay-md {
   max-width: 520px;
@@ -1710,42 +1722,6 @@ body {
 .overlay-grip {
   display: none;
 }
-@keyframes overlay-fade {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-@keyframes overlay-fade-out {
-  from {
-    opacity: 1;
-  }
-  to {
-    opacity: 0;
-  }
-}
-@keyframes overlay-pop {
-  from {
-    opacity: 0;
-    transform: scale(0.96);
-  }
-  to {
-    opacity: 1;
-    transform: none;
-  }
-}
-@keyframes overlay-pop-out {
-  from {
-    opacity: 1;
-    transform: none;
-  }
-  to {
-    opacity: 0;
-    transform: scale(0.97);
-  }
-}
 @media (max-width: 640px) {
   .overlay-mask {
     align-items: flex-end;
@@ -1759,10 +1735,6 @@ body {
     max-height: 90dvh;
     border-radius: 16px 16px 0 0;
     border-bottom: none;
-    animation: sheet-up 0.24s var(--ease) both;
-  }
-  .overlay-panel.is-closing {
-    animation: sheet-down 0.19s var(--ease) both;
   }
   .overlay-grip {
     display: block;
@@ -1781,22 +1753,6 @@ body {
   }
   .overlay-body {
     padding: 4px 14px calc(16px + env(safe-area-inset-bottom));
-  }
-}
-@keyframes sheet-up {
-  from {
-    transform: translateY(100%);
-  }
-  to {
-    transform: none;
-  }
-}
-@keyframes sheet-down {
-  from {
-    transform: none;
-  }
-  to {
-    transform: translateY(100%);
   }
 }
 

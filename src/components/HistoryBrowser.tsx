@@ -10,6 +10,7 @@ import MyNumbersResultView from './MyNumbersResultView'
 import MyNumbersPanel from './MyNumbersPanel'
 import TicketCheck from './TicketCheck'
 import Overlay from './Overlay'
+import MotionCard from './MotionCard'
 
 const PAGE = 20
 
@@ -128,7 +129,7 @@ export default function HistoryBrowser({
       <MyNumbersPanel config={config} sorted={sorted} />
       {/* U-12-3 中奖查询：点选号码 + 选期核对奖级 */}
       <TicketCheck config={config} sorted={sorted} />
-      <section className="card">
+      <MotionCard className="card" delay={0.14}>
       <div className="card-head">
         <h2>历史开奖</h2>
         <select className="hist-select" value={year} onChange={(e) => { setYear(e.target.value); setLimit(PAGE) }}>
@@ -192,7 +193,7 @@ export default function HistoryBrowser({
           加载更多（剩余 {filtered.length - visible.length} 期）
         </button>
       )}
-      </section>
+      </MotionCard>
 
       {/* U-10 单期号码历史表现：上层弹层展示（桌面居中弹窗 / 手机底部抽屉） */}
       <Overlay

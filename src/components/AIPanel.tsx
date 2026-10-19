@@ -14,6 +14,7 @@ import {
   type AnalysisStep,
   type LLMSettings,
 } from '../services/ai'
+import MotionCard from './MotionCard'
 
 const SAMPLE_SIZE = 300
 
@@ -164,7 +165,7 @@ export default function AIPanel({
   }
 
   return (
-    <section className="card">
+    <MotionCard className="card">
       <div className="card-head">
         <h2>AI 分析分步解释面板</h2>
         <button className="range-tab" onClick={() => setSettingsOpen((v) => !v)}>
@@ -305,6 +306,6 @@ export default function AIPanel({
           </div>
         </div>
       )}
-    </section>
+    </MotionCard>
   )
 }

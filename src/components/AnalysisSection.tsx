@@ -5,6 +5,7 @@ import TrendChart from './TrendChart'
 import FrequencyChart from './FrequencyChart'
 import OmissionTable from './OmissionTable'
 import PeriodPicker from './PeriodPicker'
+import MotionCard from './MotionCard'
 
 /** 分析区：期数快捷 chips + 步进按钮选窗口 → Worker 计算 → 走势图 + 频率图 + 遗漏表 */
 export default function AnalysisSection({
@@ -44,7 +45,7 @@ export default function AnalysisSection({
   const format = (pos: number) => sorted[n - 1 - pos]?.drawNo ?? ''
 
   return (
-    <section className="card">
+    <MotionCard className="card">
       <div className="card-head">
         <h2>走势与号码分析</h2>
       </div>
@@ -84,6 +85,6 @@ export default function AnalysisSection({
           )}
         </>
       )}
-    </section>
+    </MotionCard>
   )
 }

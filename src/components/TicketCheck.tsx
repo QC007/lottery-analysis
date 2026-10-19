@@ -3,6 +3,7 @@ import type { Draw, LotteryConfig } from '../config/lotteries'
 import { checkPrize, type PrizeCheck } from '../services/mynumbers'
 import NumberPicker, { togglePick } from './NumberPicker'
 import { Ball } from './Ball'
+import MotionCard from './MotionCard'
 
 function pad(n: number): string {
   return String(n).padStart(2, '0')
@@ -55,7 +56,7 @@ export default function TicketCheck({
   }
 
   return (
-    <section className="card">
+    <MotionCard className="card" delay={0.07}>
       <div className="card-head">
         <h2>中奖查询</h2>
       </div>
@@ -141,6 +142,6 @@ export default function TicketCheck({
           )}
         </div>
       )}
-    </section>
+    </MotionCard>
   )
 }

@@ -4,6 +4,7 @@ import { analyzeMyNumbers, type MyNumbersResult } from '../services/mynumbers'
 import NumberPicker, { togglePick } from './NumberPicker'
 import PeriodPicker from './PeriodPicker'
 import MyNumbersResultView from './MyNumbersResultView'
+import MotionCard from './MotionCard'
 
 function emptyPicks(config: LotteryConfig): number[][] {
   return config.zones.map(() => [])
@@ -75,7 +76,7 @@ export default function MyNumbersPanel({
   }
 
   return (
-    <section className="card">
+    <MotionCard className="card">
       <div className="card-head">
         <h2>自选号码分析</h2>
       </div>
@@ -115,6 +116,6 @@ export default function MyNumbersPanel({
       {n < 2 && <p className="hint">本地暂无数据，请先等待同步完成。</p>}
 
       {result && <MyNumbersResultView config={config} result={result} />}
-    </section>
+    </MotionCard>
   )
 }

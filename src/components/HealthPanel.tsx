@@ -3,6 +3,7 @@ import type { Draw, LotteryConfig } from '../config/lotteries'
 import { diagnose, type HealthReport } from '../services/health'
 import NumberPicker, { togglePick } from './NumberPicker'
 import HealthRadar from './HealthRadar'
+import MotionCard from './MotionCard'
 
 function emptyPicks(config: LotteryConfig): number[][] {
   return config.zones.map(() => [])
@@ -35,7 +36,7 @@ export default function HealthPanel({
   )
 
   return (
-    <section className="card">
+    <MotionCard className="card" delay={0.14}>
       <div className="card-head">
         <h2>组合健康度</h2>
       </div>
@@ -104,6 +105,6 @@ export default function HealthPanel({
           </p>
         </>
       )}
-    </section>
+    </MotionCard>
   )
 }

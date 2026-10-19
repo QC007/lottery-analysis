@@ -1,7 +1,10 @@
-import { useMemo, useState } from 'react'
+import { lazy, Suspense, useMemo, useState } from 'react'
 import type { Draw, LotteryConfig } from '../config/lotteries'
 import { Ball } from './Ball'
 import PeriodPicker from './PeriodPicker'
+
+// U-14 冷热号 Lottie 特效：单独 chunk 懒加载（lottie-light ~50KB gzip 不进首包）
+const FxLottie = lazy(() => import('./FxLottie'))
 
 const HOT_N = 6
 const COLD_N = 6
@@ -73,6 +76,16 @@ export default function HotColdPanel({
                 key={num}
                 className={`cell${hot.has(num) ? ' is-hot' : ''}${cold.has(num) ? ' is-cold' : ''}`}
               >
+                {hot.has(num) && (
+                  <Suspense fallback={null}>
+                    <FxLottie kind="flame" />
+                  </Suspense>
+                )}
+                {cold.has(num) && (
+                  <Suspense fallback={null}>
+                    <FxLottie kind="frost" />
+                  </Suspense>
+                )}
                 <Ball zone={zone} n={num} />
                 <i className="count">{counts.get(num)}</i>
               </span>

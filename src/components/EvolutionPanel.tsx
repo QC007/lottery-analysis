@@ -4,6 +4,7 @@ import { db, type ModelEvent, type ModelRecord } from '../db/db'
 import { baselineExpected, EVAL_PERIODS, evaluateModels, type ModelEval } from '../services/models'
 import { ensurePoolSeeded, runEvolution, type Transition } from '../services/evolution'
 import ModelMatchChart from './ModelMatchChart'
+import MotionCard from './MotionCard'
 
 const STATUS_TEXT: Record<ModelRecord['status'], string> = {
   testing: '观察期',
@@ -110,7 +111,7 @@ export default function EvolutionPanel({
     null
 
   return (
-    <section className="card">
+    <MotionCard className="card" delay={0.07}>
       <div className="card-head">
         <h2>选号策略实验室</h2>
         <button className="btn" disabled={!evals || busy || computing} onClick={run}>
@@ -252,6 +253,6 @@ export default function EvolutionPanel({
           )}
         </>
       )}
-    </section>
+    </MotionCard>
   )
 }

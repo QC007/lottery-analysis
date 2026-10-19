@@ -6,6 +6,7 @@ import { Ball } from './Ball'
 import PeriodPicker from './PeriodPicker'
 import MyNumbersResultView from './MyNumbersResultView'
 import Overlay from './Overlay'
+import MotionCard from './MotionCard'
 
 const BET_CHIPS = [1, 2, 3, 4, 5]
 /** 数据少于此期数时统计意义太弱，不允许生成 */
@@ -103,7 +104,7 @@ export default function RecommendPanel({
   )
 
   return (
-    <section className="card">
+    <MotionCard className="card" delay={0.07}>
       <div className="card-head">
         <h2>AI 统计选号</h2>
       </div>
@@ -209,6 +210,6 @@ export default function RecommendPanel({
         />
         {histResult && <MyNumbersResultView config={config} result={histResult} />}
       </Overlay>
-    </section>
+    </MotionCard>
   )
 }

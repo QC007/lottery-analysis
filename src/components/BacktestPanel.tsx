@@ -6,6 +6,7 @@ import NumberPicker, { togglePick } from './NumberPicker'
 import BacktestChart from './BacktestChart'
 import PeriodPicker from './PeriodPicker'
 import { isSuppressed, suppress24h } from '../services/rational'
+import MotionCard from './MotionCard'
 
 interface Group {
   /** 每区已选号码 */
@@ -163,7 +164,7 @@ export default function BacktestPanel({
   if (!config.prize) return null
 
   return (
-    <section className="card">
+    <MotionCard className="card">
       <div className="card-head">
         <h2>模拟选号 · 历史回溯</h2>
         <label className="bt-compare">
@@ -260,6 +261,6 @@ export default function BacktestPanel({
           </p>
         </>
       )}
-    </section>
+    </MotionCard>
   )
 }
