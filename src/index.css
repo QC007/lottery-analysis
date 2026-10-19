@@ -688,7 +688,7 @@ body {
   font-style: normal;
   font-size: var(--fs-sm);
   padding: 1px 6px;
-  border-radius: 4px;
+  border-radius: 4px; /* 行内小标签保持小圆角 */
 }
 .tag-hot {
   background: rgba(248, 81, 73, 0.15);
@@ -742,14 +742,15 @@ body {
 .range-tabs {
   display: inline-flex;
   border: 1px solid var(--border);
-  border-radius: 6px;
+  border-radius: var(--radius-sm); /* U-15 批③：圆角归入 token */
   overflow: hidden;
   background: var(--panel-2);
 }
 .range-tab {
   border: none;
   background: transparent;
-  padding: 5px 12px;
+  padding: 6px 14px; /* U-15 批③：触控热区补足 */
+  min-height: 32px;
   font-size: var(--fs-sm);
   color: var(--text-2);
   cursor: pointer;
@@ -822,6 +823,10 @@ body {
 .picker {
   margin: 8px 0;
 }
+/* U-15 批③：红/蓝两个选区之间拉开节奏 */
+.picker + .picker {
+  margin-top: 16px;
+}
 .picker-head {
   display: flex;
   align-items: baseline;
@@ -833,17 +838,17 @@ body {
 }
 .picker-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(34px, 1fr));
-  gap: 5px;
+  grid-template-columns: repeat(auto-fill, minmax(38px, 1fr)); /* U-15 批③：格子加大，触控更稳 */
+  gap: 6px;
 }
 .pick-ball {
   position: relative;
-  height: 32px;
+  height: 38px; /* U-15 批③：32→38px，桌面触控底线 */
   border-radius: 50%;
   border: 1px solid var(--border);
   background: var(--panel-2);
   color: var(--text-2);
-  font-size: var(--fs-md);
+  font-size: var(--fs-base);
   cursor: pointer;
   padding: 0;
   overflow: hidden;
@@ -958,7 +963,7 @@ body {
 .bt-cell {
   background: var(--panel-2);
   border: 1px solid var(--border-soft);
-  border-radius: 6px;
+  border-radius: var(--radius-sm); /* U-15 批③：圆角归入 token */
   padding: 8px 10px;
   display: flex;
   flex-direction: column;
@@ -986,7 +991,7 @@ body {
   border-left: 3px solid var(--orange);
   background: rgba(240, 136, 62, 0.08);
   padding: 8px 12px;
-  border-radius: 4px;
+  border-radius: var(--radius-sm); /* U-15 批③：圆角归入 token */
   color: var(--text-2);
 }
 
@@ -1022,7 +1027,7 @@ body {
 /* ---- AI 面板（F-05，已屏蔽，样式保留供后端阶段恢复） ---- */
 .ai-settings {
   border: 1px solid var(--border);
-  border-radius: 6px;
+  border-radius: var(--radius-sm); /* U-15 批③：圆角归入 token */
   padding: 12px;
   margin-bottom: 12px;
   background: var(--panel-2);
@@ -1038,7 +1043,7 @@ body {
 .ai-settings input {
   padding: 7px 10px;
   border: 1px solid var(--border);
-  border-radius: 4px;
+  border-radius: var(--radius-sm); /* U-15 批③：圆角归入 token */
   font-size: var(--fs-md);
   background: var(--bg);
   color: var(--text);
@@ -1057,7 +1062,7 @@ body {
 }
 .ai-step {
   border: 1px solid var(--border);
-  border-radius: 6px;
+  border-radius: var(--radius-sm); /* U-15 批③：圆角归入 token */
   margin-bottom: 8px;
   overflow: hidden;
 }
@@ -1119,7 +1124,7 @@ body {
   flex: 1;
   padding: 7px 10px;
   border: 1px solid var(--border);
-  border-radius: 4px;
+  border-radius: var(--radius-sm); /* U-15 批③：圆角归入 token */
   font-size: var(--fs-md);
   background: var(--bg);
   color: var(--text);
@@ -1131,7 +1136,7 @@ body {
   border-left: 4px solid var(--orange);
   font-size: var(--fs-md);
   color: var(--orange);
-  border-radius: 4px;
+  border-radius: var(--radius-sm); /* U-15 批③：圆角归入 token */
 }
 .ai-modal-mask {
   position: fixed;
@@ -1208,7 +1213,7 @@ body {
   flex-wrap: wrap;
   margin: 10px 0;
   padding: 8px 12px;
-  border-radius: 4px;
+  border-radius: var(--radius-sm); /* U-15 批③：圆角归入 token */
   background: rgba(210, 153, 34, 0.1);
   border: 1px solid rgba(210, 153, 34, 0.4);
   color: #d29922;
@@ -1219,7 +1224,7 @@ body {
 .model-limits {
   border: 1px solid rgba(240, 136, 62, 0.4);
   background: rgba(240, 136, 62, 0.07);
-  border-radius: 6px;
+  border-radius: var(--radius-sm); /* U-15 批③：圆角归入 token */
   padding: 10px 14px;
   margin-bottom: 12px;
   font-size: var(--fs-md);
@@ -1275,7 +1280,7 @@ body {
 .capsule-detail {
   margin-top: 10px;
   border: 1px solid var(--border);
-  border-radius: 6px;
+  border-radius: var(--radius-sm); /* U-15 批③：圆角归入 token */
   padding: 10px 14px;
   background: var(--panel-2);
 }
@@ -1302,7 +1307,7 @@ body {
 .import-text {
   width: 100%;
   border: 1px solid var(--border);
-  border-radius: 4px;
+  border-radius: var(--radius-sm); /* U-15 批③：圆角归入 token */
   padding: 8px 10px;
   font-size: var(--fs-sm);
   font-family: Consolas, monospace;
@@ -1319,7 +1324,7 @@ body {
 .hist-select {
   padding: 6px 10px;
   border: 1px solid var(--border);
-  border-radius: 6px;
+  border-radius: var(--radius-sm); /* U-15 批③：圆角归入 token */
   font-size: var(--fs-md);
   background: var(--panel-2);
   color: var(--text);
@@ -1331,7 +1336,7 @@ body {
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 9px 6px;
+  padding: 10px 8px; /* U-15 批③：行高呼吸感 */
   border-bottom: 1px solid var(--border-soft);
   flex-wrap: wrap;
   border-radius: var(--radius-sm);
@@ -1380,8 +1385,8 @@ body {
 }
 .hist-act {
   flex-shrink: 0;
-  min-height: 36px;
-  padding: 4px 14px;
+  min-height: 38px; /* U-15 批③：触控上调 */
+  padding: 6px 16px;
   border: 1px solid var(--border);
   border-radius: 999px;
   background: var(--panel-2);
@@ -1621,7 +1626,7 @@ body {
 }
 .rec-bet {
   margin-top: 12px;
-  padding: 12px 14px 14px;
+  padding: 14px 16px 16px; /* U-15 批③：注卡片内边距舒展一档 */
   border: 1px solid var(--border-soft);
   border-radius: var(--radius-md);
   background: var(--panel-2);
@@ -1642,7 +1647,7 @@ body {
 .rec-nums {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 10px; /* U-15 批③：号码列间距舒展 */
 }
 .rec-cell {
   display: flex;
@@ -1729,7 +1734,7 @@ body {
   align-items: flex-start;
   justify-content: space-between;
   gap: 12px;
-  padding: 14px 16px 12px 18px;
+  padding: 16px 18px 14px 20px; /* U-15 批③：头部留白舒展，层级更稳 */
   border-bottom: 1px solid var(--border-soft);
   background: rgba(22, 27, 34, 0.82);
   backdrop-filter: blur(12px);
@@ -1739,6 +1744,7 @@ body {
 .overlay-title {
   font-size: var(--fs-lg);
   font-weight: 600;
+  letter-spacing: 0.3px;
   color: var(--text);
   line-height: 1.4;
 }
@@ -1771,7 +1777,7 @@ body {
   overflow-y: auto;
   overscroll-behavior: contain; /* 防 iOS 滚动穿透 */
   -webkit-overflow-scrolling: touch;
-  padding: 4px 18px 18px;
+  padding: 8px 20px 20px; /* U-15 批③：内容区与头部留白对齐 */
 }
 .overlay-body .hint {
   margin: 6px 0;
@@ -1810,7 +1816,7 @@ body {
     margin-top: -12px;
   }
   .overlay-body {
-    padding: 4px 14px calc(16px + env(safe-area-inset-bottom));
+    padding: 8px 16px calc(16px + env(safe-area-inset-bottom));
   }
 }
 
@@ -2092,6 +2098,13 @@ textarea:focus {
   }
   .rec-cell {
     width: 48px;
+  }
+  /* U-15 批③：手机端触控目标补足 44px */
+  .pick-ball {
+    height: 44px;
+  }
+  .btn {
+    min-height: 44px;
   }
 }
 
