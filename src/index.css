@@ -155,36 +155,46 @@ body {
   color: var(--red-soft);
 }
 
-/* ---- 彩种 Tab ---- */
+/* ---- 彩种 Tab（U-15 批②：分段控件化——整体容器包裹，激活态浮起，比游离药丸更高级） ---- */
 .tabs {
   display: flex;
-  gap: 8px;
-  margin-bottom: 14px;
+  gap: 4px;
+  margin-bottom: 12px;
+  padding: 4px;
+  background: var(--panel-2);
+  border: 1px solid var(--line-inset);
+  border-radius: var(--radius-lg);
 }
 .tab {
+  flex: 1;
   padding: 8px 20px;
   min-height: 40px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border: 1px solid var(--border);
-  background: var(--panel);
-  border-radius: 18px;
+  border: 1px solid transparent;
+  background: transparent;
+  border-radius: var(--radius-md);
   font-size: var(--fs-base);
   color: var(--text-2);
   cursor: pointer;
 }
 .tab.is-active {
-  /* U-10：渐变描边（双背景法），激活态更精致 */
-  background:
-    linear-gradient(180deg, #2a3342, #1f2630) padding-box,
-    var(--grad-accent) border-box;
-  border-color: transparent;
-  color: var(--gold);
+  background: linear-gradient(180deg, #2b3546, #232b39);
+  border-color: rgba(227, 179, 65, 0.35);
+  color: var(--gold-bright);
   font-weight: 600;
+  box-shadow:
+    0 2px 8px rgba(0, 0, 0, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    0 0 12px rgba(227, 179, 65, 0.08);
+}
+.tab:not(.is-active):hover {
+  color: var(--text);
+  background: rgba(255, 255, 255, 0.03);
 }
 
-/* ---- U-2 功能分区导航（吸顶） ---- */
+/* ---- U-2 功能分区导航（吸顶；U-15 批②：图标放大 + 激活态柔光衬底 + 吸顶投影分层） ---- */
 .fn-tabs {
   position: sticky;
   top: 0;
@@ -194,9 +204,14 @@ body {
   margin: 0 -16px 12px;
   padding: 6px 16px 0;
   background: rgba(13, 17, 23, 0.92);
-  backdrop-filter: blur(10px);
+  backdrop-filter: blur(12px);
   border-bottom: 1px solid var(--border-soft);
+  box-shadow: 0 8px 20px -12px rgba(0, 0, 0, 0.55);
   overflow-x: auto;
+  scrollbar-width: none; /* 隐藏横滚条，视觉更干净 */
+}
+.fn-tabs::-webkit-scrollbar {
+  display: none;
 }
 /* U-10：图标在上、文字在下的双行导航 */
 .fn-tab {
@@ -207,20 +222,27 @@ body {
   background: transparent;
   color: var(--text-2);
   font-size: var(--fs-sm);
-  padding: 7px 4px 9px;
+  padding: 8px 4px 10px;
   cursor: pointer;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 3px;
-  min-height: 48px;
+  gap: 4px;
+  min-height: 52px;
 }
 .fn-tab svg {
   display: block;
+  width: 18px;
+  height: 18px;
 }
 .fn-tab.is-active {
-  color: var(--gold);
+  color: var(--gold-bright);
   font-weight: 600;
+  background: linear-gradient(180deg, rgba(227, 179, 65, 0.1), rgba(227, 179, 65, 0.02) 70%, transparent);
+  border-radius: 10px 10px 0 0;
+}
+.fn-tab.is-active svg {
+  filter: drop-shadow(0 0 6px rgba(240, 193, 75, 0.45));
 }
 /* U-10：激活态 24px 圆角短条指示 */
 .fn-tab::after {
@@ -304,20 +326,51 @@ body {
 .hero-head {
   display: flex;
   justify-content: space-between;
-  align-items: baseline;
+  align-items: center;
   gap: 10px;
   flex-wrap: wrap;
-  margin-bottom: 14px;
+  margin-bottom: 16px;
 }
+/* U-15 批②：金色 live 小圆点，标记「最新」的即时感 */
 .hero-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
   font-size: var(--fs-md);
   font-weight: 600;
   letter-spacing: 0.6px;
   color: var(--gold);
 }
+.hero-label::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--gold-bright);
+  box-shadow: 0 0 8px rgba(240, 193, 75, 0.8);
+  animation: hero-pulse 2.4s ease-in-out infinite;
+}
+@keyframes hero-pulse {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.55;
+    transform: scale(0.82);
+  }
+}
+/* U-15 批②：期号日期收进柔光胶囊，与 label 形成主次对比 */
 .hero-date {
-  font-size: var(--fs-sm);
+  font-size: var(--fs-xs);
+  letter-spacing: 0.3px;
   color: var(--text-2);
+  padding: 4px 12px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--line-inset);
+  font-variant-numeric: tabular-nums;
 }
 /* 球阵放大：hero 的绝对主角 */
 .card-hero .ball {
@@ -326,8 +379,12 @@ body {
   font-size: var(--fs-base);
   animation: ball-pop 0.32s var(--ease) both;
 }
+/* U-15 批②：球阵行距节奏化——红/蓝两区之间留白，行内不再上下飘 */
 .card-hero .zone {
-  margin: 6px 0;
+  margin: 0;
+}
+.card-hero .zone + .zone {
+  margin-top: 12px;
 }
 /* 球依次弹出（zone-name 是第 1 个子元素，球从 2 开始） */
 .card-hero .zone .ball:nth-child(2) { animation-delay: 20ms; }
@@ -350,8 +407,8 @@ body {
 /* 奖池/销售额：数据大数字 + 小标签，统计层级对比 */
 .hero-stats {
   display: flex;
-  margin-top: 16px;
-  padding-top: 14px;
+  margin-top: 18px;
+  padding-top: 16px;
   border-top: 1px solid var(--line-faint);
 }
 .hero-stat {
@@ -372,7 +429,7 @@ body {
   letter-spacing: 0.3px;
 }
 .hero-stat-num {
-  font-size: 20px; /* U-15：收敛字阶野值 21→20 */
+  font-size: 22px; /* U-15 批②：hero 数据大数字再提一档，主角层级 */
   font-weight: 700;
   letter-spacing: 0.3px;
   color: var(--gold-bright);
@@ -1917,6 +1974,7 @@ button {
 .fn-tab:not(.is-active):hover {
   color: var(--text);
   background: rgba(255, 255, 255, 0.03);
+  border-radius: 10px 10px 0 0;
 }
 .range-tab:not(.is-active):hover {
   background: rgba(88, 166, 255, 0.12);
@@ -2012,7 +2070,7 @@ textarea:focus {
     font-size: var(--fs-base);
   }
   .hero-stat-num {
-    font-size: 18px;
+    font-size: 20px;
   }
   .hero-stat + .hero-stat {
     margin-left: 12px;
