@@ -8,6 +8,7 @@ import { useStore } from './store/useStore'
 import SyncBanner from './components/SyncBanner'
 import LotteryTabs from './components/LotteryTabs'
 import NavTabs, { type TabKey } from './components/NavTabs'
+import GlobalDataBar from './components/GlobalDataBar'
 import HomeTab from './components/HomeTab'
 import HistoryBrowser from './components/HistoryBrowser'
 import RationalTips from './components/RationalTips'
@@ -123,6 +124,8 @@ export default function App() {
       <RationalTips />
       <LotteryTabs />
       <NavTabs tab={tab} onChange={setTab} />
+      {/* U-12-1 全局数据覆盖条：未收录完整历史时任意分区可见 */}
+      <GlobalDataBar config={config} count={draws?.length ?? 0} />
       {draws === undefined ? (
         <p className="loading">读取本地数据库…</p>
       ) : latest ? (

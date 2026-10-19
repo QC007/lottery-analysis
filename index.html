@@ -5,9 +5,108 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content="彩票历史数据分析工具——数据研究与娱乐参考，不具备预测能力，请理性购彩" />
     <title>彩票分析平台</title>
+    <style>
+      /* U-12-2 首屏加载屏：托管在 React 挂载前的 #root 内，应用挂载后自动被替换。
+         网络慢（跨境访问 GitHub Pages）时给出明确进度反馈，避免白屏焦虑。 */
+      #boot {
+        min-height: 100vh;
+        min-height: 100dvh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 14px;
+        background: #0d1117;
+        color: #e6edf3;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC',
+          'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+      }
+      .boot-logo {
+        width: 64px;
+        height: 64px;
+        border-radius: 18px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 30px;
+        font-weight: 700;
+        color: #0d1117;
+        background: linear-gradient(135deg, #f0c14b, #e3b341 45%, #c9971f);
+        box-shadow: 0 8px 32px rgba(227, 179, 65, 0.25);
+        animation: boot-pulse 1.6s ease-in-out infinite;
+      }
+      .boot-title {
+        font-size: 17px;
+        font-weight: 600;
+        letter-spacing: 2px;
+      }
+      .boot-bar {
+        width: 180px;
+        height: 3px;
+        border-radius: 2px;
+        background: #21262d;
+        overflow: hidden;
+      }
+      .boot-bar i {
+        display: block;
+        width: 40%;
+        height: 100%;
+        border-radius: 2px;
+        background: linear-gradient(90deg, transparent, #e3b341, transparent);
+        animation: boot-slide 1.2s ease-in-out infinite;
+      }
+      .boot-tip {
+        font-size: 12px;
+        color: #9aa4b2;
+      }
+      .boot-slow {
+        font-size: 12px;
+        color: #f0883e;
+        max-width: 300px;
+        text-align: center;
+        line-height: 1.7;
+        padding: 0 16px;
+      }
+      @keyframes boot-pulse {
+        0%,
+        100% {
+          transform: scale(1);
+          box-shadow: 0 8px 32px rgba(227, 179, 65, 0.25);
+        }
+        50% {
+          transform: scale(1.06);
+          box-shadow: 0 8px 44px rgba(227, 179, 65, 0.42);
+        }
+      }
+      @keyframes boot-slide {
+        0% {
+          transform: translateX(-120%);
+        }
+        100% {
+          transform: translateX(420%);
+        }
+      }
+    </style>
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <div id="boot">
+        <div class="boot-logo">彩</div>
+        <div class="boot-title">彩票分析平台</div>
+        <div class="boot-bar"><i></i></div>
+        <div class="boot-tip">正在加载应用与数据…</div>
+        <div class="boot-slow" hidden>
+          网络较慢，首次加载可能需要 10~30 秒。若长时间无响应，请检查网络后刷新重试。
+        </div>
+      </div>
+    </div>
+    <script>
+      // 8 秒仍未挂载 → 显示慢网提示（挂载后 #boot 随 React 渲染被替换，本逻辑自然失效）
+      setTimeout(function () {
+        var el = document.querySelector('.boot-slow')
+        if (el) el.hidden = false
+      }, 8000)
+    </script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

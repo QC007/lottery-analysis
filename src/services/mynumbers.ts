@@ -140,3 +140,23 @@ export function analyzeMyNumbers(
 
   return { periods, tierHits, hits, zones }
 }
+
+/** U-12-3 中奖查询：一注号码对照某一期开奖的核对结果 */
+export interface PrizeCheck {
+  draw: Draw
+  /** 各区命中明细（picked=所选号码，hitNums=命中的号码） */
+  zones: { name: string; picked: number[]; hitNums: number[] }[]
+  /** 命中奖级（null = 未中奖；无奖级配置的彩种也为 null） */
+  tier: { name: string; amount: number } | null
+}
+
+/** 单期中奖核对：官方 prize.tiers 逐级比对，取第一个命中的奖级 */
+export function checkPrize(config: LotteryConfig, picks: number[][], draw: Draw): PrizeCheck {
+  const zones = config.zones.map((z, zi) => {
+    const picked = picks[zi] ?? []
+    const drawn = draw.zones[zi] ?? []
+    return { name: z.name, picked, hitNums: picked.filter((n) => drawn.includes(n)) }
+  })
+  const tier = config.prize ? matchTier(picks, draw, config.prize) : null
+  return { draw, zones, tier }
+}

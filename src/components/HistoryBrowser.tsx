@@ -8,6 +8,7 @@ import { analyzeMyNumbers } from '../services/mynumbers'
 import PeriodPicker from './PeriodPicker'
 import MyNumbersResultView from './MyNumbersResultView'
 import MyNumbersPanel from './MyNumbersPanel'
+import TicketCheck from './TicketCheck'
 import Overlay from './Overlay'
 
 const PAGE = 20
@@ -125,6 +126,8 @@ export default function HistoryBrowser({
   return (
     <>
       <MyNumbersPanel config={config} sorted={sorted} />
+      {/* U-12-3 中奖查询：点选号码 + 选期核对奖级 */}
+      <TicketCheck config={config} sorted={sorted} />
       <section className="card">
       <div className="card-head">
         <h2>历史开奖</h2>
@@ -142,9 +145,10 @@ export default function HistoryBrowser({
         本地 {sorted.length} 期 / 远端 {m?.totalDraws ?? '…'} 期（{config.drawSchedule}）
         {complete && ' · 已完整'}
       </p>
-      {!complete && (
+      {/* U-12-1「全部历史」入口已上移至全局数据条（任意 Tab 可见），此处仅保留按年拉取 */}
+      {!complete && year !== 'all' && (
         <button className="btn btn-soft" disabled={busy} onClick={pull}>
-          {busy ? '拉取中…' : `拉取${year === 'all' ? '全部历史' : `${year} 年`}归档`}
+          {busy ? '拉取中…' : `拉取 ${year} 年归档`}
         </button>
       )}
       {yearMissing && !complete && (

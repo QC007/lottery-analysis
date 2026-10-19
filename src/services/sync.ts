@@ -87,16 +87,24 @@ async function syncLottery(cfg: LotteryConfig, meta: MetaJson): Promise<SyncResu
 }
 
 /** 按需拉取年份归档（查看全量历史 / 分析引擎需要冷数据时调用），返回新增期数 */
-export async function ensureYears(cfg: LotteryConfig, metaYears: number[]): Promise<number> {
+export async function ensureYears(
+  cfg: LotteryConfig,
+  metaYears: number[],
+  /** U-12-1 逐年进度回调（done/total，每抓完一年触发一次） */
+  onProgress?: (done: number, total: number) => void,
+): Promise<number> {
   const state = await db.syncState.get(cfg.id)
   const have = new Set(state?.years ?? [])
   const missing = metaYears.filter((y) => !have.has(y))
   let added = 0
+  let done = 0
   for (const year of missing) {
     const archive = await fetchJson<{ draws: Draw[] }>(`data/${cfg.id}/${year}.json`)
     const records = archive.draws.map((d) => ({ ...d, lottery: cfg.id }))
     await db.draws.bulkPut(records)
     added += records.length
+    done++
+    onProgress?.(done, missing.length)
   }
   if (missing.length > 0) {
     await db.syncState.put({
