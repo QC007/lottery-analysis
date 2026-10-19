@@ -12,6 +12,8 @@ export interface LotteryMeta {
   name: string
   latestDrawNo: string
   latestDate: string
+  /** U-7 水位修订号（latest.json updatedAt）：扩展字段补全后期号不变也需重拉 */
+  rev?: string
   latestCount: number
   archiveYears: number[]
   totalDraws: number
@@ -63,8 +65,8 @@ async function syncLottery(cfg: LotteryConfig, meta: MetaJson): Promise<SyncResu
   if (!m) return { lottery: cfg.id, name: cfg.name, updated: false, added: 0, error: 'meta 缺少该彩种' }
 
   const state = await db.syncState.get(cfg.id)
-  // 水位未变则跳过（meta.latestDrawNo 与本地已同步期号一致）
-  if (state && state.latestDrawNo === m.latestDrawNo) {
+  // 水位未变则跳过（期号一致且修订号 rev 一致；U-7 rev 用于奖池字段补全后强制重拉）
+  if (state && state.latestDrawNo === m.latestDrawNo && state.rev === m.rev) {
     return { lottery: cfg.id, name: cfg.name, updated: false, added: 0 }
   }
 
@@ -77,6 +79,7 @@ async function syncLottery(cfg: LotteryConfig, meta: MetaJson): Promise<SyncResu
       latestDrawNo: m.latestDrawNo,
       years: state?.years ?? [],
       syncedAt: Date.now(),
+      rev: m.rev,
     }
     await db.syncState.put(nextState)
   })

@@ -88,4 +88,8 @@ export interface Draw {
   date: string
   /** 按 zones 顺序的号码数组；无序区升序存储 */
   zones: number[][]
+  /** U-7 开奖后奖池滚存（元）；仅官方源抓取的新数据有，历史数据/备用源可能缺失 */
+  pool?: number
+  /** U-7 本期销售额（元）；同上可选 */
+  sales?: number
 }

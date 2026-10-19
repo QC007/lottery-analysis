@@ -129,7 +129,7 @@ export default function App() {
         <>
           {TAB_DESC[tab] && <p className="tab-desc">{TAB_DESC[tab]}</p>}
           {tab === 'home' && (
-            <HomeTab config={config} sorted={sorted} latest={latest} onGo={setTab} />
+            <HomeTab config={config} sorted={sorted} latest={latest} />
           )}
           {tab === 'trend' && (
             <Suspense fallback={<p className="hint">加载分析模块…</p>}>

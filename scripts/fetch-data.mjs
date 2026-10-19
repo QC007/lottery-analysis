@@ -76,10 +76,12 @@ async function syncLottery(config) {
 
   // ---- 抓取 ----
   const fetched = []
+  const rawAll = [] // U-7：本页全部解析结果（含已入库期，供扩展字段补全）
   const maxPages = backfill ? MAX_BACKFILL_PAGES : MAX_INCREMENTAL_PAGES
   for (let page = 1; page <= maxPages; page++) {
     const { list, src } = await fetchPage(config, page)
     if (list.length === 0) break
+    rawAll.push(...list)
     const fresh = list.filter((d) => !known.has(d.drawNo))
     fetched.push(...fresh)
     // 单期源（apihz）只抓一页，抓完即停
@@ -89,15 +91,36 @@ async function syncLottery(config) {
     await sleep(PAGE_DELAY_MS)
   }
 
-  if (fetched.length === 0) {
+  // ---- U-7 扩展字段补全：官方源（sporttery/cwl）带奖池/销售额，
+  //      为已入库但缺字段的同期号记录补上（只补缺失字段，绝不覆盖号码/日期）----
+  let extraPatched = false
+  const rawMap = new Map(rawAll.map((d) => [d.drawNo, d]))
+  for (const d of existing.draws) {
+    const raw = rawMap.get(d.drawNo)
+    if (!raw) continue
+    if (raw.pool !== undefined && d.pool === undefined) {
+      d.pool = raw.pool
+      extraPatched = true
+    }
+    if (raw.sales !== undefined && d.sales === undefined) {
+      d.sales = raw.sales
+      extraPatched = true
+    }
+  }
+
+  if (fetched.length === 0 && !extraPatched) {
     console.log(`[${config.name}] 无新数据`)
   } else {
-    console.log(`[${config.name}] 抓到 ${fetched.length} 期新数据，校验中…`)
+    if (fetched.length > 0) {
+      console.log(`[${config.name}] 抓到 ${fetched.length} 期新数据，校验中…`)
 
-    // ---- 校验：任何一期不合格则整批放弃，保护已有数据 ----
-    for (const d of fetched) {
-      const { ok, errors } = validateDraw(config, d)
-      if (!ok) throw new Error(`数据校验失败 ${d.drawNo}: ${errors.join('; ')}`)
+      // ---- 校验：任何一期不合格则整批放弃，保护已有数据 ----
+      for (const d of fetched) {
+        const { ok, errors } = validateDraw(config, d)
+        if (!ok) throw new Error(`数据校验失败 ${d.drawNo}: ${errors.join('; ')}`)
+      }
+    } else {
+      console.log(`[${config.name}] 补全 ${existing.draws.length} 期内已有期的奖池/销售额字段`)
     }
 
     // ---- 合并 + 连续性告警 ----
@@ -179,18 +202,31 @@ function normDate(s) {
   return m ? m[0] : ''
 }
 
+/** 数值字段归一化："796,723,787.40" → 796723787.4；空/非法 → undefined */
+function num(s) {
+  if (s === undefined || s === null || s === '') return undefined
+  const n = Number(String(s).replace(/,/g, ''))
+  return Number.isFinite(n) ? n : undefined
+}
+
 /** 按 parser 类型分发解析 */
 function parseSource(config, parser, json) {
   if (parser === 'sporttery') {
-    // 实测结构：{ value: { list: [{ lotteryDrawNum, lotteryDrawTime, lotteryDrawResult: "02 09 21 26 32 06 12" }] } }
+    // 实测结构：{ value: { list: [{ lotteryDrawNum, lotteryDrawTime, lotteryDrawResult,
+    //   poolBalanceAfterdraw: "796,723,787.40", totalSaleAmount: "316,189,166" }] } }
+    // U-7：pool=开奖后奖池滚存（元）、sales=本期销售额（元）
     return (json?.value?.list ?? []).map((item) => ({
       drawNo: normDrawNo(config, item.lotteryDrawNum),
       date: normDate(item.lotteryDrawTime),
       zones: splitZones(config, String(item.lotteryDrawResult).trim().split(/\s+/).map(Number)),
+      pool: num(item.poolBalanceAfterdraw),
+      sales: num(item.totalSaleAmount),
     }))
   }
   if (parser === 'cwl') {
-    // 实测结构：{ result: [{ code, date: "2026-10-15(四)", red: "05,21,22,23,28,31", blue: "14" }] }
+    // 实测结构：{ result: [{ code, date: "2026-10-15(四)", red: "05,21,22,23,28,31", blue: "14",
+    //   poolmoney: 7868047916, sales: "364378528" }] }
+    // U-7：pool=开奖后奖池（元）、sales=销售额（元）
     return (json?.result ?? []).map((item) => ({
       drawNo: normDrawNo(config, item.code),
       date: normDate(item.date),
@@ -198,6 +234,8 @@ function parseSource(config, parser, json) {
         config,
         [...String(item.red).split(','), ...(item.blue ? [item.blue] : [])].map(Number),
       ),
+      pool: num(item.poolmoney ?? item.poolMoneyafterprize),
+      sales: num(item.sales),
     }))
   }
   if (parser === 'huiniao') {
@@ -271,6 +309,8 @@ async function summarize(config, dir) {
     ok: true,
     latestDrawNo: latest.draws[0]?.drawNo ?? null,
     latestDate: latest.draws[0]?.date ?? null,
+    /** U-7 水位修订号 = latest.json 的 updatedAt：扩展字段补全会变，前端据此强制重拉 */
+    rev: latest.updatedAt ?? null,
     latestCount: latest.draws.length,
     archiveYears,
     total,
@@ -285,6 +325,7 @@ async function writeMeta(okResults) {
       name: r.name,
       latestDrawNo: r.latestDrawNo,
       latestDate: r.latestDate,
+      rev: r.rev,
       latestCount: r.latestCount,
       archiveYears: r.archiveYears,
       totalDraws: r.total,

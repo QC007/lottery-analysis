@@ -15,6 +15,8 @@ export interface SyncState {
   years: number[]
   /** 最近同步时间戳 */
   syncedAt: number
+  /** U-7 水位修订号（= meta.rev / latest.json updatedAt）：奖池等扩展字段补全后期号不变也强制重拉 */
+  rev?: string
 }
 
 /** 通用键值设置（F-05：LLM 配置、首次提示标记等；存 IndexedDB 而非 localStorage，避免 XSS 读取） */

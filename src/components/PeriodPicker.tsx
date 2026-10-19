@@ -6,8 +6,9 @@ import { useRef, useState } from 'react'
  *  ② 自定义滑动条：轨道任意位置按下，距触点最近的手柄吸附到触点并继续拖动
  *     —— 解决 U-1c 原生双 range「上层 input 拦截点击、双手柄接近时点不中目标手柄」的缺陷；
  *     整条轨道 44px 高均为触控热区，触屏 touch-action:none 防止拖动时页面滚动
- *  ③ 大步进按钮组：−10 / −1 / +1 / +10 平移窗口（dual 模式整体平移保持窗口大小；
- *     single 模式仅移动起点，终点固定为最新一期）
+ *  ③ 大步进按钮组（U-7 改为单端微调）：−10 / −1 / +1 / +10 微调「当前目标手柄」
+ *     （不再是整窗平移）；目标 = 最近点按/拖动的手柄，也可点「微调起点/终点」直接切换，
+ *     目标手柄带高亮描边；single 模式终点固定为最新一期，恒微调起点
  *
  * 位置语义与 U-1c PeriodSlider 一致：0 = 最旧，count-1 = 最新
  */
@@ -37,9 +38,12 @@ export default function PeriodPicker({
   const max = count - 1
   const trackRef = useRef<HTMLDivElement>(null)
   const [dragging, setDragging] = useState<'lo' | 'hi' | null>(null)
+  /** U-7 步进微调目标手柄（最近点按/拖动者；single 恒 lo） */
+  const [target, setTarget] = useState<'lo' | 'hi'>('lo')
 
   const [lo, hi] = value
   const size = hi - lo + 1
+  const stepTarget: 'lo' | 'hi' = single ? 'lo' : target
 
   /** chips：锚定最新一期，窗口大小 = n */
   const anchorLatest = (n: number) => {
@@ -47,15 +51,9 @@ export default function PeriodPicker({
     onChange([l, max])
   }
 
-  /** 步进：dual 整体平移（保持窗口大小，触边即止）；single 仅移起点 */
-  const shift = (delta: number) => {
-    if (single) {
-      const l = Math.max(0, Math.min(lo + delta, hi - minGap))
-      if (l !== lo) onChange([l, hi])
-    } else {
-      const d = delta < 0 ? Math.max(delta, -lo) : Math.min(delta, max - hi)
-      if (d !== 0) onChange([lo + d, hi + d])
-    }
+  /** U-7 步进：微调当前目标手柄 ±N 期（非整窗平移；越界自动夹取，无变化不上报） */
+  const nudge = (delta: number) => {
+    applyPos(stepTarget, (stepTarget === 'lo' ? lo : hi) + delta)
   }
 
   /* ---------------- 滑动条 ---------------- */
@@ -93,6 +91,7 @@ export default function PeriodPicker({
     e.preventDefault()
     const which = nearestHandle(posFromClientX(e.clientX))
     setDragging(which)
+    setTarget(which) // U-7：点按/拖动的手柄成为步进微调目标
     // 最近手柄吸附到触点（点轨道即移动最近手柄）
     applyPos(which, posFromClientX(e.clientX))
     try {
@@ -130,8 +129,10 @@ export default function PeriodPicker({
 
   const chipActive = (n: number) => hi === max && size === Math.min(n, count)
   const allActive = lo === 0 && hi === max
-  const canOlder = lo > 0
-  const canNewer = single ? lo < hi - minGap : hi < max
+  // U-7：步进按钮是否可用取决于目标手柄能否向该方向移动
+  const canOlder = stepTarget === 'lo' ? lo > 0 : hi > lo + minGap
+  const canNewer = stepTarget === 'lo' ? lo < hi - minGap : hi < max
+  const targetLabel = stepTarget === 'lo' ? '起点' : '终点'
 
   return (
     <div className="ppicker">
@@ -168,11 +169,11 @@ export default function PeriodPicker({
         <div className="pp-rail" />
         <div className="pp-fill" style={{ left: pct(lo), width: pct(hi - lo) }} />
         <div
-          className={`pp-handle${dragging === 'lo' ? ' is-drag' : ''}`}
+          className={`pp-handle${dragging === 'lo' ? ' is-drag' : ''}${stepTarget === 'lo' ? ' is-target' : ''}`}
           style={{ left: pct(lo) }}
           role="slider"
           tabIndex={0}
-          aria-label={single ? '起点期' : '起点期（较早）'}
+          aria-label={single ? '起点期' : '起点期（较早；步进微调目标）'}
           aria-valuemin={0}
           aria-valuemax={hi - minGap}
           aria-valuenow={lo}
@@ -181,11 +182,11 @@ export default function PeriodPicker({
         />
         {!single && (
           <div
-            className={`pp-handle${dragging === 'hi' ? ' is-drag' : ''}`}
+            className={`pp-handle${dragging === 'hi' ? ' is-drag' : ''}${stepTarget === 'hi' ? ' is-target' : ''}`}
             style={{ left: pct(hi) }}
             role="slider"
             tabIndex={0}
-            aria-label="终点期（较新）"
+            aria-label="终点期（较新；步进微调目标）"
             aria-valuemin={lo + minGap}
             aria-valuemax={max}
             aria-valuenow={hi}
@@ -195,14 +196,33 @@ export default function PeriodPicker({
         )}
       </div>
 
+      {!single && (
+        <div className="pp-targets" role="group" aria-label="步进微调目标">
+          <button
+            type="button"
+            className={`pp-target${stepTarget === 'lo' ? ' is-active' : ''}`}
+            onClick={() => setTarget('lo')}
+          >
+            微调起点
+          </button>
+          <button
+            type="button"
+            className={`pp-target${stepTarget === 'hi' ? ' is-active' : ''}`}
+            onClick={() => setTarget('hi')}
+          >
+            微调终点
+          </button>
+        </div>
+      )}
+
       <div className="pp-stepper">
         <div className="pp-btns">
           <button
             type="button"
             className="pp-btn"
             disabled={!canOlder}
-            onClick={() => shift(-10)}
-            aria-label={single ? '起点向更早 10 期' : '窗口向更早 10 期'}
+            onClick={() => nudge(-10)}
+            aria-label={`${targetLabel}向更早 10 期`}
           >
             −10
           </button>
@@ -210,8 +230,8 @@ export default function PeriodPicker({
             type="button"
             className="pp-btn"
             disabled={!canOlder}
-            onClick={() => shift(-1)}
-            aria-label={single ? '起点向更早 1 期' : '窗口向更早 1 期'}
+            onClick={() => nudge(-1)}
+            aria-label={`${targetLabel}向更早 1 期`}
           >
             −1
           </button>
@@ -229,8 +249,8 @@ export default function PeriodPicker({
             type="button"
             className="pp-btn"
             disabled={!canNewer}
-            onClick={() => shift(1)}
-            aria-label={single ? '起点向更近 1 期' : '窗口向更近 1 期'}
+            onClick={() => nudge(1)}
+            aria-label={`${targetLabel}向更近 1 期`}
           >
             +1
           </button>
@@ -238,8 +258,8 @@ export default function PeriodPicker({
             type="button"
             className="pp-btn"
             disabled={!canNewer}
-            onClick={() => shift(10)}
-            aria-label={single ? '起点向更近 10 期' : '窗口向更近 10 期'}
+            onClick={() => nudge(10)}
+            aria-label={`${targetLabel}向更近 10 期`}
           >
             +10
           </button>
