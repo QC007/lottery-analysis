@@ -3,8 +3,8 @@ import type { Draw, LotteryConfig } from '../config/lotteries'
 import { Ball } from './Ball'
 import PeriodPicker from './PeriodPicker'
 
-// U-14 冷热号 Lottie 特效：单独 chunk 懒加载（lottie-light ~50KB gzip 不进首包）
-const FxLottie = lazy(() => import('./FxLottie'))
+// U-14 v4 冷热号 Canvas 粒子特效：单独 chunk 懒加载（零依赖 ~3KB）
+const FxParticles = lazy(() => import('./FxParticles'))
 
 const HOT_N = 6
 const COLD_N = 6
@@ -80,12 +80,12 @@ export default function HotColdPanel({
                 <span className="ball-fx">
                   {hot.has(num) && (
                     <Suspense fallback={null}>
-                      <FxLottie kind="flame" />
+                      <FxParticles kind="flame" />
                     </Suspense>
                   )}
                   {cold.has(num) && (
                     <Suspense fallback={null}>
-                      <FxLottie kind="frost" />
+                      <FxParticles kind="frost" />
                     </Suspense>
                   )}
                   <Ball zone={zone} n={num} />
