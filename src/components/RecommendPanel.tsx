@@ -5,6 +5,7 @@ import { analyzeMyNumbers } from '../services/mynumbers'
 import { Ball } from './Ball'
 import PeriodPicker from './PeriodPicker'
 import MyNumbersResultView from './MyNumbersResultView'
+import Overlay from './Overlay'
 
 const BET_CHIPS = [1, 2, 3, 4, 5]
 /** 数据少于此期数时统计意义太弱，不允许生成 */
@@ -164,26 +165,12 @@ export default function RecommendPanel({
               ))}
               <button
                 type="button"
-                className="btn rec-hist-btn"
-                aria-expanded={openBet === bi}
+                className={`btn rec-hist-btn${openBet === bi ? ' is-open' : ''}`}
+                aria-haspopup="dialog"
                 onClick={() => setOpenBet(openBet === bi ? null : bi)}
               >
-                {openBet === bi ? '收起历史表现' : '查看这注的历史表现'}
+                查看这注的历史表现
               </button>
-              {openBet === bi && (
-                <div className="rec-hist">
-                  <p className="hint">可重新选择历史期数，逐期比对该注号码中过哪些奖：</p>
-                  <PeriodPicker
-                    count={n}
-                    value={histWin}
-                    format={format}
-                    onChange={([lo, hi]) =>
-                      setHistSel({ from: sorted[n - 1 - lo].drawNo, to: sorted[n - 1 - hi].drawNo })
-                    }
-                  />
-                  {histResult && <MyNumbersResultView config={config} result={histResult} />}
-                </div>
-              )}
             </div>
           ))}
           <p className="hint rec-principle">
@@ -199,6 +186,29 @@ export default function RecommendPanel({
           </p>
         </>
       )}
+
+      {/* U-10 注单历史表现：上层弹层展示（桌面居中弹窗 / 手机底部抽屉） */}
+      <Overlay
+        open={openBet !== null}
+        onClose={() => setOpenBet(null)}
+        title={openBet !== null ? `第 ${openBet + 1} 注 · 历史表现` : ''}
+        subtitle={
+          openBet !== null
+            ? `${sorted[n - 1 - histWin[0]]?.drawNo ?? ''} ~ ${sorted[n - 1 - histWin[1]]?.drawNo ?? ''} · 共 ${histDraws.length} 期`
+            : undefined
+        }
+      >
+        <p className="hint">可重新选择历史期数，逐期比对该注号码中过哪些奖：</p>
+        <PeriodPicker
+          count={n}
+          value={histWin}
+          format={format}
+          onChange={([lo, hi]) =>
+            setHistSel({ from: sorted[n - 1 - lo].drawNo, to: sorted[n - 1 - hi].drawNo })
+          }
+        />
+        {histResult && <MyNumbersResultView config={config} result={histResult} />}
+      </Overlay>
     </section>
   )
 }

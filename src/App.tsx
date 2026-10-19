@@ -124,29 +124,32 @@ export default function App() {
       <LotteryTabs />
       <NavTabs tab={tab} onChange={setTab} />
       {draws === undefined ? (
-        <p className="hint">读取本地数据库…</p>
+        <p className="loading">读取本地数据库…</p>
       ) : latest ? (
         <>
-          {TAB_DESC[tab] && <p className="tab-desc">{TAB_DESC[tab]}</p>}
-          {tab === 'home' && (
-            <HomeTab config={config} sorted={sorted} latest={latest} />
-          )}
-          {tab === 'trend' && (
-            <Suspense fallback={<p className="hint">加载分析模块…</p>}>
-              <AnalysisSection config={config} sorted={sorted} />
-            </Suspense>
-          )}
-          {tab === 'sim' && (
-            <Suspense fallback={<p className="hint">加载选号模块…</p>}>
-              <SimPanels config={config} sorted={sorted} />
-            </Suspense>
-          )}
-          {tab === 'history' && <HistoryBrowser config={config} sorted={sorted} />}
-          {tab === 'more' && (
-            <Suspense fallback={<p className="hint">加载进阶模块…</p>}>
-              <MorePanels config={config} sorted={sorted} />
-            </Suspense>
-          )}
+          {/* U-10：key={tab} 触发重挂载 → 卡片依次浮现动效 */}
+          <div className="fade-pane" key={tab}>
+            {TAB_DESC[tab] && <p className="tab-desc">{TAB_DESC[tab]}</p>}
+            {tab === 'home' && (
+              <HomeTab config={config} sorted={sorted} latest={latest} />
+            )}
+            {tab === 'trend' && (
+              <Suspense fallback={<p className="loading">加载分析模块…</p>}>
+                <AnalysisSection config={config} sorted={sorted} />
+              </Suspense>
+            )}
+            {tab === 'sim' && (
+              <Suspense fallback={<p className="loading">加载选号模块…</p>}>
+                <SimPanels config={config} sorted={sorted} />
+              </Suspense>
+            )}
+            {tab === 'history' && <HistoryBrowser config={config} sorted={sorted} />}
+            {tab === 'more' && (
+              <Suspense fallback={<p className="loading">加载进阶模块…</p>}>
+                <MorePanels config={config} sorted={sorted} />
+              </Suspense>
+            )}
+          </div>
         </>
       ) : (
         <p className="hint">本地暂无「{config.name}」数据，等待同步…</p>

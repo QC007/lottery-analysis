@@ -8,6 +8,7 @@ import { analyzeMyNumbers } from '../services/mynumbers'
 import PeriodPicker from './PeriodPicker'
 import MyNumbersResultView from './MyNumbersResultView'
 import MyNumbersPanel from './MyNumbersPanel'
+import Overlay from './Overlay'
 
 const PAGE = 20
 
@@ -82,6 +83,10 @@ export default function HistoryBrowser({
 
   const m = meta?.lotteries[config.id]
 
+  // U-10 当前弹层展示的期次（openNo → 降序下标 → Draw）
+  const openIdx = openNo ? (idxOf.get(openNo) ?? -1) : -1
+  const openDraw = openIdx >= 0 ? sorted[openIdx] : undefined
+
   // 年份下拉 = 本地已有年份 ∪ 远端归档年份（降序）
   const yearOptions = useMemo(() => {
     const s = new Set(sorted.map((d) => d.date.slice(0, 4)))
@@ -138,7 +143,7 @@ export default function HistoryBrowser({
         {complete && ' · 已完整'}
       </p>
       {!complete && (
-        <button className="btn" disabled={busy} onClick={pull}>
+        <button className="btn btn-soft" disabled={busy} onClick={pull}>
           {busy ? '拉取中…' : `拉取${year === 'all' ? '全部历史' : `${year} 年`}归档`}
         </button>
       )}
@@ -150,7 +155,6 @@ export default function HistoryBrowser({
       <div className="hist-list">
         {visible.map((d) => {
           const on = openNo === d.drawNo
-          const idx = idxOf.get(d.drawNo) ?? -1
           return (
             <div className="hist-item" key={d.drawNo}>
               <div className="hist-row">
@@ -169,25 +173,34 @@ export default function HistoryBrowser({
                   type="button"
                   className={`hist-act${on ? ' is-open' : ''}`}
                   onClick={() => setOpenNo(on ? null : d.drawNo)}
-                  aria-expanded={on}
+                  aria-haspopup="dialog"
                 >
-                  {on ? '收起' : '查询'}
+                  查询
                 </button>
               </div>
-              {on && idx >= 0 && (
-                <HistPerf config={config} draw={d} older={sorted.slice(idx + 1)} />
-              )}
             </div>
           )
         })}
         {visible.length === 0 && <p className="hint">{year === 'all' ? '暂无数据' : '该年份本地暂无数据'}</p>}
       </div>
       {filtered.length > visible.length && (
-        <button className="btn btn-ghost hist-more" onClick={() => setLimit((l) => l + PAGE)}>
+        <button className="btn btn-soft hist-more" onClick={() => setLimit((l) => l + PAGE)}>
           加载更多（剩余 {filtered.length - visible.length} 期）
         </button>
       )}
       </section>
+
+      {/* U-10 单期号码历史表现：上层弹层展示（桌面居中弹窗 / 手机底部抽屉） */}
+      <Overlay
+        open={!!openDraw}
+        onClose={() => setOpenNo(null)}
+        title={openDraw ? `第 ${openDraw.drawNo} 期 · 号码历史表现` : ''}
+        subtitle={openDraw ? `开奖日期 ${openDraw.date}` : undefined}
+      >
+        {openDraw && openIdx >= 0 && (
+          <HistPerf config={config} draw={openDraw} older={sorted.slice(openIdx + 1)} />
+        )}
+      </Overlay>
     </>
   )
 }
