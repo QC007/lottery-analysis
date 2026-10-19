@@ -2103,6 +2103,29 @@ textarea:focus {
   .pick-ball {
     height: 36px;
   }
+  /* U-15 批⑤：历史行手机端两行布局——第一行 期号+日期+查询，第二行 球阵通栏 */
+  .hist-row {
+    row-gap: 8px;
+  }
+  .hist-no {
+    min-width: 0;
+  }
+  .hist-date {
+    min-width: 0;
+    flex: 1;
+  }
+  .hist-act {
+    order: 3;
+    margin-left: auto;
+    min-height: 32px;
+    padding: 4px 14px;
+    font-size: var(--fs-xs);
+  }
+  .hist-balls {
+    order: 4;
+    flex-basis: 100%;
+    gap: 10px;
+  }
   .btn {
     min-height: 44px;
   }
