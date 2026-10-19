@@ -74,10 +74,12 @@ export default function App() {
 
   const config = enabledLotteries.find((l) => l.id === activeLotteryId) ?? enabledLotteries[0]
 
-  // IndexedDB 响应式查询：同步写入后 UI 自动刷新
-  const draws = useLiveQuery(
-    () => db.draws.where('lottery').equals(config.id).toArray(),
-    [config.id],
+  // U-15 批⑥：启动时一次读全量（两彩种合计约 5k 行，内存可忽略），
+  // 之后切换彩种 = 纯内存过滤，瞬时完成，根除切换延时
+  const allDraws = useLiveQuery(() => db.draws.toArray(), [])
+  const draws = useMemo(
+    () => allDraws?.filter((d) => d.lottery === config.id),
+    [allDraws, config.id],
   )
 
   // drawNo 定宽（7 位/5 位），字符串降序 = 期号降序
@@ -130,8 +132,9 @@ export default function App() {
         <p className="loading">读取本地数据库…</p>
       ) : latest ? (
         <>
-          {/* U-10：key={tab} 触发重挂载 → 卡片依次浮现动效 */}
-          <div className="fade-pane" key={tab}>
+          {/* U-10：key={tab} 触发重挂载 → 卡片依次浮现动效；
+              U-15 批⑥：key 加入彩种——切换彩种整区重播入场动效，切换反馈清晰可感 */}
+          <div className="fade-pane" key={`${tab}|${activeLotteryId}`}>
             {TAB_DESC[tab] && <p className="tab-desc">{TAB_DESC[tab]}</p>}
             {tab === 'home' && (
               <HomeTab config={config} sorted={sorted} latest={latest} />

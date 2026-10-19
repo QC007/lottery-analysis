@@ -1,3 +1,4 @@
+import { Fragment } from 'react'
 import type { Draw, LotteryConfig } from '../config/lotteries'
 import { Ball } from './Ball'
 
@@ -27,14 +28,15 @@ export default function LatestDrawCard({ config, draw }: { config: LotteryConfig
           {week ? `（周${week}）` : ''}
         </span>
       </div>
-      <div>
+      {/* U-15 批⑥：红/蓝球合并为一行，区间细分隔线，颜色即语义（去掉文字标签省宽度） */}
+      <div className="zone hero-zone">
         {draw.zones.map((nums, i) => (
-          <div className="zone" key={config.zones[i].key}>
-            <span className="zone-name">{config.zones[i].name}</span>
+          <Fragment key={config.zones[i].key}>
+            {i > 0 && <span className="zone-sep" aria-hidden="true" />}
             {nums.map((n) => (
               <Ball key={n} zone={config.zones[i]} n={n} />
             ))}
-          </div>
+          </Fragment>
         ))}
       </div>
       {(draw.pool !== undefined || draw.sales !== undefined) && (
