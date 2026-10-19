@@ -610,13 +610,18 @@ body {
   z-index: 0;
   pointer-events: none;
 }
-/* U-14 v2 火焰/冰晶均为全向辐射设计：铺满整格（球体置于其上，z-index:1） */
+/* U-14 v3 特效锚定球体：ball-fx 以球为定位基准，特效以球心为圆心向各方向辐射 */
+.ball-fx {
+  position: relative;
+  display: inline-flex;
+}
+.ball-fx .fx-lottie {
+  inset: -13px;
+}
 .fx-flame {
-  inset: -3px;
   opacity: 0.95;
 }
 .fx-frost {
-  inset: -3px;
   opacity: 0.85;
 }
 .tag-hot,

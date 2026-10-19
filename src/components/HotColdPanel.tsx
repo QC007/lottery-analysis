@@ -76,17 +76,20 @@ export default function HotColdPanel({
                 key={num}
                 className={`cell${hot.has(num) ? ' is-hot' : ''}${cold.has(num) ? ' is-cold' : ''}`}
               >
-                {hot.has(num) && (
-                  <Suspense fallback={null}>
-                    <FxLottie kind="flame" />
-                  </Suspense>
-                )}
-                {cold.has(num) && (
-                  <Suspense fallback={null}>
-                    <FxLottie kind="frost" />
-                  </Suspense>
-                )}
-                <Ball zone={zone} n={num} />
+                {/* U-14 v3：特效锚定球体（ball-fx 包裹），以球心为圆心向四周辐射 */}
+                <span className="ball-fx">
+                  {hot.has(num) && (
+                    <Suspense fallback={null}>
+                      <FxLottie kind="flame" />
+                    </Suspense>
+                  )}
+                  {cold.has(num) && (
+                    <Suspense fallback={null}>
+                      <FxLottie kind="frost" />
+                    </Suspense>
+                  )}
+                  <Ball zone={zone} n={num} />
+                </span>
                 <i className="count">{counts.get(num)}</i>
               </span>
             ))}
