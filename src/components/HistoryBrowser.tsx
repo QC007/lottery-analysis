@@ -4,9 +4,58 @@ import { Ball } from './Ball'
 import { db } from '../db/db'
 import { ensureYears } from '../services/sync'
 import { useStore } from '../store/useStore'
+import { analyzeMyNumbers } from '../services/mynumbers'
+import PeriodPicker from './PeriodPicker'
+import MyNumbersResultView from './MyNumbersResultView'
 import MyNumbersPanel from './MyNumbersPanel'
 
 const PAGE = 20
+
+/**
+ * U-9 单期号码历史表现（开奖历史行内展开）
+ * 该期开奖号码在「此前历史」中的表现：用户可用 PeriodPicker 自选范围（不含本期），
+ * 复用 U-4 analyzeMyNumbers 引擎与共用展示组件，默认近 100 期。
+ */
+function HistPerf({
+  config,
+  draw,
+  older,
+}: {
+  config: LotteryConfig
+  draw: Draw
+  /** 该期之前（更早）的全部本地数据，期号降序，[0] = 紧邻该期之前一期 */
+  older: Draw[]
+}) {
+  const m = older.length
+  // 窗口位置（0=最旧，m-1=最新）；null = 默认近 100 期
+  const [sel, setSel] = useState<[number, number] | null>(null)
+  const [lo, hi] = sel ?? [Math.max(0, m - 100), m - 1]
+
+  // 位置 → 降序下标换算：位置 hi（较新）= m-1-hi，位置 lo（较旧）= m-1-lo（与 MyNumbersPanel 同构）
+  const windowDraws = useMemo(() => older.slice(m - 1 - hi, m - 1 - lo + 1), [older, m, lo, hi])
+
+  const result = useMemo(
+    () => (windowDraws.length >= 2 ? analyzeMyNumbers(config, draw.zones, windowDraws) : null),
+    [config, draw, windowDraws],
+  )
+
+  if (m < 2) return <p className="hint">该期之前暂无本地历史数据，请先拉取归档。</p>
+
+  return (
+    <div className="hist-exp">
+      <p className="hint">
+        第 {draw.drawNo} 期号码在此前 {m} 期中的表现（默认近 100 期，可自选范围；不含本期）
+      </p>
+      <PeriodPicker
+        count={m}
+        value={[lo, hi]}
+        format={(pos) => older[m - 1 - pos]?.drawNo ?? ''}
+        onChange={(v) => setSel(v)}
+      />
+      {result && <MyNumbersResultView config={config} result={result} />}
+    </div>
+  )
+}
 
 /**
  * 历史开奖浏览页（U-1a）：覆盖度 + 年份筛选 + 分页列表
@@ -25,6 +74,11 @@ export default function HistoryBrowser({
   const [limit, setLimit] = useState(PAGE)
   const [busy, setBusy] = useState(false)
   const [msg, setMsg] = useState('')
+  // U-9 单展开：当前查看历史表现的期号（null = 全部收起）
+  const [openNo, setOpenNo] = useState<string | null>(null)
+
+  // 期号 → sorted 降序下标（行内展开时定位「该期之前」的数据切片）
+  const idxOf = useMemo(() => new Map(sorted.map((d, i) => [d.drawNo, i])), [sorted])
 
   const m = meta?.lotteries[config.id]
 
@@ -94,21 +148,38 @@ export default function HistoryBrowser({
       {msg && <p className="hint">{msg}</p>}
 
       <div className="hist-list">
-        {visible.map((d) => (
-          <div className="hist-row" key={d.drawNo}>
-            <span className="hist-no">第 {d.drawNo} 期</span>
-            <span className="hist-date">{d.date}</span>
-            <span className="hist-balls">
-              {d.zones.map((nums, zi) => (
-                <span className="hist-zone" key={config.zones[zi].key}>
-                  {nums.map((n) => (
-                    <Ball key={n} zone={config.zones[zi]} n={n} />
+        {visible.map((d) => {
+          const on = openNo === d.drawNo
+          const idx = idxOf.get(d.drawNo) ?? -1
+          return (
+            <div className="hist-item" key={d.drawNo}>
+              <div className="hist-row">
+                <span className="hist-no">第 {d.drawNo} 期</span>
+                <span className="hist-date">{d.date}</span>
+                <span className="hist-balls">
+                  {d.zones.map((nums, zi) => (
+                    <span className="hist-zone" key={config.zones[zi].key}>
+                      {nums.map((n) => (
+                        <Ball key={n} zone={config.zones[zi]} n={n} />
+                      ))}
+                    </span>
                   ))}
                 </span>
-              ))}
-            </span>
-          </div>
-        ))}
+                <button
+                  type="button"
+                  className={`hist-act${on ? ' is-open' : ''}`}
+                  onClick={() => setOpenNo(on ? null : d.drawNo)}
+                  aria-expanded={on}
+                >
+                  {on ? '收起' : '查询'}
+                </button>
+              </div>
+              {on && idx >= 0 && (
+                <HistPerf config={config} draw={d} older={sorted.slice(idx + 1)} />
+              )}
+            </div>
+          )
+        })}
         {visible.length === 0 && <p className="hint">{year === 'all' ? '暂无数据' : '该年份本地暂无数据'}</p>}
       </div>
       {filtered.length > visible.length && (

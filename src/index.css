@@ -994,6 +994,38 @@ body {
   margin-top: 10px;
 }
 
+/* ---- U-9 开奖历史行内「查询」：单期号码历史表现展开区 ---- */
+.hist-item {
+  border-bottom: 1px solid var(--border-soft);
+}
+.hist-item .hist-row {
+  border-bottom: none;
+}
+.hist-act {
+  flex-shrink: 0;
+  min-height: 36px;
+  padding: 4px 14px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--panel-2);
+  color: var(--blue-soft);
+  font-size: 12px;
+  cursor: pointer;
+}
+.hist-act:hover {
+  border-color: var(--blue);
+  color: var(--blue);
+}
+.hist-act.is-open {
+  border-color: var(--blue);
+  background: rgba(88, 166, 255, 0.1);
+  color: var(--blue);
+  font-weight: 600;
+}
+.hist-exp {
+  padding: 2px 2px 12px;
+}
+
 /* ---- U-3 触控期数选择器（快捷 chips + 大步进按钮，替代 U-1c 滑动条） ---- */
 .ppicker {
   margin: 10px 0 4px;
