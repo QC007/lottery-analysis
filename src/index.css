@@ -610,19 +610,14 @@ body {
   z-index: 0;
   pointer-events: none;
 }
-/* 热号：火舌在球体后上方升腾（cell 已 overflow:hidden，尺寸内收避免裁切突兀） */
+/* U-14 v2 火焰/冰晶均为全向辐射设计：铺满整格（球体置于其上，z-index:1） */
 .fx-flame {
-  top: 1px;
-  left: 50%;
-  width: 30px;
-  height: 34px;
-  transform: translateX(-50%);
-  opacity: 0.9;
+  inset: -3px;
+  opacity: 0.95;
 }
-/* 冷号：冰晶在球体后整格旋转 */
 .fx-frost {
-  inset: -2px;
-  opacity: 0.8;
+  inset: -3px;
+  opacity: 0.85;
 }
 .tag-hot,
 .tag-cold {
