@@ -8,7 +8,7 @@
   color-scheme: dark;
   --bg: #0d1117;
   --panel: #161b22;
-  --panel-2: #1c2129;
+  --panel-2: #1f2632; /* U-15 提亮：与卡面拉开清晰层级 */
   --border: #30363d;
   --border-soft: #21262d;
   --text: #e6edf3;
@@ -21,15 +21,15 @@
   --red-soft: #ff7b72;
   --green: #3fb950;
   --orange: #f0883e;
-  /* U-8 统一视觉层级 tokens */
-  --radius-sm: 6px; /* 小元素：统计格、详情块 */
-  --radius-md: 8px; /* 内嵌块：按钮、chips、信息条 */
-  --radius-lg: 12px; /* 卡片 */
+  /* U-8 统一视觉层级 tokens（U-15 圆角放大一档，更现代） */
+  --radius-sm: 8px; /* 小元素：统计格、详情块 */
+  --radius-md: 10px; /* 内嵌块：按钮、chips、信息条 */
+  --radius-lg: 14px; /* 卡片 */
   --ease: cubic-bezier(0.25, 0.6, 0.3, 1);
   --shadow-card: 0 2px 6px rgba(0, 0, 0, 0.22), 0 8px 24px rgba(0, 0, 0, 0.32);
   --shadow-card-hover: 0 4px 12px rgba(0, 0, 0, 0.3), 0 16px 40px rgba(0, 0, 0, 0.45);
-  /* U-10 设计系统 2.0：层次/强调/字阶/间距 */
-  --panel-3: #232a34; /* 弹层面板、hover 内嵌块 */
+  /* U-10 设计系统 2.0：层次/强调/字阶/间距（U-15：内嵌层级提亮一档，四级纵深拉开） */
+  --panel-3: #262e3a; /* 弹层面板、hover 内嵌块 */
   --border-strong: #3d444d; /* hover 边框、弹层分隔 */
   --grad-accent: linear-gradient(135deg, #f0c14b, var(--gold) 45%, #c9971f);
   --grad-line: linear-gradient(90deg, transparent, var(--gold), transparent);
@@ -50,7 +50,7 @@
   /* U-11 设计系统 3.0：四级纵深（页面#0d1117 < 卡片 < 内嵌块 < hover）+ hero 主角层级 */
   --gold-bright: #f0c14b;
   --line-faint: rgba(255, 255, 255, 0.05); /* 卡片描边：近乎隐形，层级交给阴影 */
-  --line-inset: rgba(255, 255, 255, 0.04); /* 内嵌块描边 */
+  --line-inset: rgba(255, 255, 255, 0.06); /* 内嵌块描边（U-15 提亮配合新 panel-2） */
   --shadow-hero: 0 6px 20px rgba(0, 0, 0, 0.4), 0 24px 64px rgba(0, 0, 0, 0.5);
   --grad-hero: radial-gradient(
       130% 150% at 50% -25%,
@@ -81,7 +81,7 @@ body {
 .app {
   max-width: 720px;
   margin: 0 auto;
-  padding: 32px 16px calc(32px + env(safe-area-inset-bottom));
+  padding: 24px 16px calc(32px + env(safe-area-inset-bottom));
 }
 
 .app h1 {
@@ -146,8 +146,9 @@ body {
   color: var(--blue-soft);
 }
 .sync-done {
-  background: rgba(63, 185, 80, 0.07);
+  background: rgba(63, 185, 80, 0.05);
   color: var(--green);
+  opacity: 0.85; /* U-15：done 态再降噪，状态是反馈不是内容 */
 }
 .sync-error {
   background: rgba(248, 81, 73, 0.1);
@@ -248,12 +249,12 @@ body {
   opacity: 0.85;
 }
 
-/* ---- 卡片（U-11：去边框化——描边近乎隐形，层级靠背景纵深+阴影；hover 轻微浮起） ---- */
+/* ---- 卡片（U-11：去边框化；U-15：padding 统一 20px 严格 8pt，卡面微提亮与内嵌层拉开） ---- */
 .card {
-  background: linear-gradient(180deg, #171d26, #131820);
+  background: linear-gradient(180deg, #18202b, #131922);
   border: 1px solid var(--line-faint);
   border-radius: var(--radius-lg);
-  padding: 18px 18px 20px;
+  padding: 20px;
   margin-bottom: 16px;
   box-shadow: var(--shadow-card), inset 0 1px 0 rgba(255, 255, 255, 0.03);
   transition:
@@ -283,7 +284,7 @@ body {
   background: var(--grad-hero);
   border-color: rgba(227, 179, 65, 0.16);
   box-shadow: var(--shadow-hero), inset 0 1px 0 rgba(255, 255, 255, 0.05);
-  padding: 20px 20px 22px;
+  padding: 20px;
 }
 @media (hover: hover) {
   .card-hero:hover {
@@ -322,7 +323,7 @@ body {
 .card-hero .ball {
   width: 40px;
   height: 40px;
-  font-size: 15px;
+  font-size: var(--fs-base);
   animation: ball-pop 0.32s var(--ease) both;
 }
 .card-hero .zone {
@@ -371,7 +372,7 @@ body {
   letter-spacing: 0.3px;
 }
 .hero-stat-num {
-  font-size: 21px;
+  font-size: 20px; /* U-15：收敛字阶野值 21→20 */
   font-weight: 700;
   letter-spacing: 0.3px;
   color: var(--gold-bright);
@@ -453,10 +454,11 @@ body {
 
 /* ---- 冷热速览 ---- */
 .zone-block h3 {
-  font-size: var(--fs-md);
-  color: var(--text-2);
+  font-size: var(--fs-base);
+  color: var(--text);
   font-weight: 600;
-  margin: 10px 0 4px;
+  letter-spacing: 0.3px;
+  margin: 14px 0 8px;
 }
 .hotcold-grid {
   display: grid;
@@ -699,11 +701,13 @@ body {
   background: linear-gradient(180deg, #2f81f7, #1f6feb);
   color: #fff;
 }
+/* U-15：卡内分区标题升级为明确的第二级层级（14px 正文色 + 更舒展的上下留白） */
 .sub-title {
-  font-size: var(--fs-md);
-  color: var(--text-2);
+  font-size: var(--fs-base);
+  color: var(--text);
   font-weight: 600;
-  margin: 18px 0 8px;
+  letter-spacing: 0.3px;
+  margin: 20px 0 10px;
 }
 .chart {
   width: 100%;
@@ -716,16 +720,13 @@ body {
 .chart-sm {
   height: 220px;
 }
-.zone-analysis {
-  margin-top: 8px;
-}
 
 /* ---- 遗漏表（U-10：去竖线 + 斑马纹 + 悬浮行 + 小号表头） ---- */
 .omission-wrap h3 {
-  font-size: var(--fs-md);
-  color: var(--text-2);
+  font-size: var(--fs-base);
+  color: var(--text);
   font-weight: 600;
-  margin: 12px 0 6px;
+  margin: 14px 0 8px;
 }
 .omission-table {
   width: 100%;
@@ -912,7 +913,7 @@ body {
   color: var(--text-2);
 }
 .bt-cell b {
-  font-size: 15px;
+  font-size: var(--fs-lg);
   color: var(--text);
 }
 .bt-cell.is-loss b {
@@ -1141,7 +1142,7 @@ body {
   color: var(--blue-soft);
   font-size: var(--fs-sm);
   cursor: pointer;
-  padding: 0;
+  padding: 8px 4px; /* U-15：补足触控热区 */
 }
 .loss-tip {
   display: flex;
@@ -1361,8 +1362,8 @@ body {
   margin: 0 0 8px;
 }
 .pp-chip {
-  min-height: 36px;
-  padding: 6px 14px;
+  min-height: 40px; /* U-15：桌面端也满足 40px 触控底线 */
+  padding: 8px 16px;
   border-radius: 8px;
   border: 1px solid transparent;
   background: transparent;
@@ -1503,8 +1504,8 @@ body {
   margin: 2px 0 4px;
 }
 .pp-target {
-  min-height: 28px;
-  padding: 3px 12px;
+  min-height: 32px; /* U-15：触控底线上调 */
+  padding: 4px 14px;
   font-size: var(--fs-xs);
   color: var(--text-2);
   background: transparent;
@@ -1948,15 +1949,12 @@ textarea:focus {
 /* ---- 第 6 批：移动端适配（≤480px） ---- */
 @media (max-width: 480px) {
   .app {
-    padding: 20px 12px;
+    padding: 16px 12px;
   }
-  /* U-8：手机端卡片收紧一档，保住内容区宽度 */
+  /* U-8：手机端卡片收紧一档，保住内容区宽度（U-15 统一 16px） */
   .card {
-    padding: 14px 14px 16px;
-    margin-bottom: 14px;
-  }
-  .card h2 {
-    font-size: 15px;
+    padding: 16px;
+    margin-bottom: 12px;
   }
   .fn-tabs {
     margin: 0 -12px 12px;
@@ -2006,7 +2004,7 @@ textarea:focus {
   }
   /* U-11：手机端 hero 球阵/数字收紧一档，保住横向排布 */
   .card-hero {
-    padding: 16px 14px 18px;
+    padding: 16px;
   }
   .card-hero .ball {
     width: 34px;

@@ -45,46 +45,50 @@ export default function AnalysisSection({
   const format = (pos: number) => sorted[n - 1 - pos]?.drawNo ?? ''
 
   return (
-    <MotionCard className="card">
-      <div className="card-head">
-        <h2>走势与号码分析</h2>
-      </div>
+    <>
+      <MotionCard className="card">
+        <div className="card-head">
+          <h2>和值走势</h2>
+        </div>
 
-      {n < 2 ? (
-        <p className="hint">本地数据不足，请等待同步完成。</p>
-      ) : (
-        <>
-          <p className="hint">统计范围：点快捷期数一键选择、拖动滑块或用 −10/−1/+1/+10 平移窗口；图表支持滚轮 / 双指缩放。</p>
-          <PeriodPicker
-            count={n}
-            value={win}
-            format={format}
-            onChange={([lo, hi]) =>
-              setSel({ from: sorted[n - 1 - lo].drawNo, to: sorted[n - 1 - hi].drawNo })
-            }
-          />
-          {!result ? (
-            <p className="hint">分析引擎计算中（Web Worker）…</p>
-          ) : (
-            <>
-              <h3 className="sub-title">
-                「{config.zones[0].name}」和值走势（{result.total} 期）
-              </h3>
-              <TrendChart points={result.sumTrend} />
-              {result.zones.map((z) => (
-                <div className="zone-analysis" key={z.key}>
-                  <h3 className="sub-title">{z.name}频率</h3>
-                  <FrequencyChart zone={z} />
-                  <OmissionTable zone={z} />
-                </div>
-              ))}
-              <p className="hint">
-                以上为历史数据统计描述，号码开出为独立随机事件，冷热与遗漏不代表未来走势，请理性看待。
-              </p>
-            </>
-          )}
-        </>
+        {n < 2 ? (
+          <p className="hint">本地数据不足，请等待同步完成。</p>
+        ) : (
+          <>
+            <p className="hint">统计范围：点快捷期数一键选择、拖动滑块或用 −10/−1/+1/+10 平移窗口；图表支持滚轮 / 双指缩放。</p>
+            <PeriodPicker
+              count={n}
+              value={win}
+              format={format}
+              onChange={([lo, hi]) =>
+                setSel({ from: sorted[n - 1 - lo].drawNo, to: sorted[n - 1 - hi].drawNo })
+              }
+            />
+            {!result ? (
+              <p className="hint">分析引擎计算中（Web Worker）…</p>
+            ) : (
+              <>
+                <h3 className="sub-title">
+                  「{config.zones[0].name}」和值（{result.total} 期）
+                </h3>
+                <TrendChart points={result.sumTrend} />
+              </>
+            )}
+          </>
+        )}
+      </MotionCard>
+      {result?.zones.map((z, i) => (
+        <MotionCard className="card" delay={0.07 * (i + 1)} key={z.key}>
+          <h2>{z.name}频率与遗漏</h2>
+          <FrequencyChart zone={z} />
+          <OmissionTable zone={z} />
+        </MotionCard>
+      ))}
+      {result && (
+        <p className="hint">
+          以上为历史数据统计描述，号码开出为独立随机事件，冷热与遗漏不代表未来走势，请理性看待。
+        </p>
       )}
-    </MotionCard>
+    </>
   )
 }
