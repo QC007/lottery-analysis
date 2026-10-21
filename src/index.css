@@ -1364,6 +1364,13 @@ body {
 .hist-row:hover {
   background: rgba(177, 186, 196, 0.06);
 }
+/* U-17：期号+日期成组，移动端改网格后可整组落在第一行 */
+.hist-meta {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  min-width: 0;
+}
 .hist-no {
   font-size: var(--fs-md);
   font-weight: 600;
@@ -2089,6 +2096,22 @@ textarea:focus {
   .card-hero {
     padding: 16px;
   }
+  /* U-17：hero 头部手机端竖排——label 一行、期号日期一行，双色球（7 位期号）与大乐透不再一个折行一个不折 */
+  .hero-head {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+    margin-bottom: 12px;
+  }
+  .hero-label {
+    font-size: var(--fs-sm);
+    gap: 6px;
+  }
+  .hero-date {
+    font-size: 10px;
+    padding: 3px 10px;
+    white-space: nowrap;
+  }
   .card-hero .ball {
     width: 36px; /* U-15 批④：手机端 hero 球 34→36，保持对选号球（36）的主角层级 */
     height: 36px;
@@ -2132,27 +2155,38 @@ textarea:focus {
     height: 36px;
   }
   /* U-15 批⑤：历史行手机端两行布局——第一行 期号+日期+查询，第二行 球阵通栏 */
+  /* U-17：改两行网格——左列（期号+日期 / 球阵），右列查询按钮跨两行垂直居中，消除「按钮偏上」 */
   .hist-row {
-    row-gap: 8px;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas:
+      'meta act'
+      'balls act';
+    align-items: center;
+    column-gap: 10px;
+    row-gap: 7px;
+    padding: 10px 4px;
+  }
+  .hist-meta {
+    grid-area: meta;
+    gap: 8px;
   }
   .hist-no {
     min-width: 0;
   }
   .hist-date {
     min-width: 0;
-    flex: 1;
   }
   .hist-act {
-    order: 3;
-    margin-left: auto;
+    grid-area: act;
+    align-self: center;
     min-height: 32px;
-    padding: 4px 14px;
+    padding: 4px 12px;
     font-size: var(--fs-xs);
   }
   .hist-balls {
-    order: 4;
-    flex-basis: 100%;
-    gap: 10px;
+    grid-area: balls;
+    gap: 8px;
   }
   .btn {
     min-height: 44px;

@@ -163,8 +163,10 @@ export default function HistoryBrowser({
           return (
             <div className="hist-item" key={d.drawNo}>
               <div className="hist-row">
-                <span className="hist-no">第 {d.drawNo} 期</span>
-                <span className="hist-date">{d.date}</span>
+                <span className="hist-meta">
+                  <span className="hist-no">第 {d.drawNo} 期</span>
+                  <span className="hist-date">{d.date}</span>
+                </span>
                 <span className="hist-balls">
                   {d.zones.map((nums, zi) => (
                     <span className="hist-zone" key={config.zones[zi].key}>

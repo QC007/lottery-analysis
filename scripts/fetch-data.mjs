@@ -108,7 +108,13 @@ async function syncLottery(config) {
     }
   }
 
-  if (fetched.length === 0 && !extraPatched) {
+  // U-17：备用源（灰鸟/apihz）不含奖池与销售额，最新一期可能缺这两个字段
+  const needsExtras = (list) => {
+    const d = list[0]
+    return !!d && (d.pool === undefined || d.sales === undefined)
+  }
+
+  if (fetched.length === 0 && !extraPatched && !needsExtras(existing.draws)) {
     console.log(`[${config.name}] 无新数据`)
   } else {
     if (fetched.length > 0) {
@@ -126,6 +132,9 @@ async function syncLottery(config) {
     // ---- 合并 + 连续性告警 ----
     let all = dedupeAndSort([...fetched, ...existing.draws])
     for (const w of checkContinuity(all)) console.warn(`⚠️  [${config.name}] ${w}`)
+
+    // U-17：最新一期若不是来自官方源，再取官方第 1 页补齐奖池/销售额
+    if (needsExtras(all)) await fillLatestExtras(config, all[0])
 
     // ---- 溢出归档（超出近 100 期部分按开奖年份归档）----
     const overflow = all.slice(LATEST_KEEP)
@@ -187,6 +196,46 @@ async function fetchPage(config, pageNo) {
     console.warn(`⚠️  [${config.name}] 源 ${src.parser} 失败: ${lastErr.message}，尝试下一个源`)
   }
   throw new Error(`第 ${pageNo} 页抓取失败: ${lastErr.message}`)
+}
+
+/** U-17：为最新一期补全官方源独有的奖池/销售额（备用源无这两字段） */
+async function fillLatestExtras(config, target) {
+  const sources = Object.values(config.sources).filter(
+    (s) => s?.urlTemplate && (s.parser === 'sporttery' || s.parser === 'cwl'),
+  )
+  for (const src of sources) {
+    const url = src.urlTemplate.replace('{pageNo}', '1').replace('{pageSize}', String(PAGE_SIZE))
+    for (let attempt = 1; attempt <= RETRY; attempt++) {
+      try {
+        const res = await fetch(url, { headers: { 'User-Agent': UA, ...(src.headers ?? {}) } })
+        if (!res.ok) throw new Error(`HTTP ${res.status}`)
+        const list = parseSource(config, src.parser, await res.json())
+        const hit = list.find((d) => d.drawNo === target.drawNo)
+        if (hit) {
+          let filled = false
+          if (target.pool === undefined && hit.pool !== undefined) {
+            target.pool = hit.pool
+            filled = true
+          }
+          if (target.sales === undefined && hit.sales !== undefined) {
+            target.sales = hit.sales
+            filled = true
+          }
+          if (filled) {
+            console.log(`[${config.name}] 最新期 ${target.drawNo} 已补全奖池/销售额`)
+            return
+          }
+        }
+        break
+      } catch (err) {
+        if (attempt === RETRY) {
+          console.warn(`⚠️  [${config.name}] 奖池补全失败(${src.parser}): ${err.message}`)
+        } else {
+          await sleep(1000 * attempt)
+        }
+      }
+    }
+  }
 }
 
 /** 期号归一化：7 位彩种若返回 5 位短号（如灰鸟 26118），补 "20" 前缀为 2026118 */
