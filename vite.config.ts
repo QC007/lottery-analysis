@@ -13,8 +13,8 @@ function copyData(): Plugin {
   }
 }
 
-// 部署于 GitHub Pages 项目站点：https://qc007.github.io/lottery-analysis/
+// U-16 改名为个人主页仓库：https://ocean-cp.github.io/（根路径部署）
 export default defineConfig({
   plugins: [react(), copyData()],
-  base: '/lottery-analysis/',
+  base: '/',
 })
