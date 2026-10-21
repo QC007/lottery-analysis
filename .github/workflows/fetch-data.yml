@@ -60,3 +60,13 @@ jobs:
                 '连续失败时请按《项目实施文档》D-06 使用手动 CSV 导入兜底。',
               ].join('\n'),
             })
+
+  # U-18：数据提交后必须重新构建部署，否则 Pages 上的 dist/data 会长期停留在旧快照
+  # （GITHUB_TOKEN 推送的提交不会触发 deploy-pages 的 push 事件，故在此直接调用可复用工作流）
+  deploy:
+    needs: fetch
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    uses: ./.github/workflows/deploy-pages.yml

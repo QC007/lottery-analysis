@@ -4,10 +4,11 @@ name: deploy-pages
 # 前置一次性设置：仓库 Settings → Pages → Build and deployment → Source 选 "GitHub Actions"
 on:
   workflow_dispatch:
+  workflow_call: # U-18：供 fetch-data 在数据更新后同一次 run 内调用（GITHUB_TOKEN 的 push 不会触发其他 workflow）
   push:
     branches: [main]
     paths-ignore:
-      - 'data/**' # data 由 fetch-data 工作流更新，不影响前端产物，不重复部署
+      - 'data/**' # data 由 fetch-data 工作流更新，由其 deploy job 直接调用本工作流部署
 
 permissions:
   contents: read

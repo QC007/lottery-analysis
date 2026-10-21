@@ -1,4 +1,5 @@
 import { create } from 'zustand'
+import { enabledLotteries } from '../config/lotteries'
 import type { MetaJson } from '../services/sync'
 import { isSuppressed, TIP_TEXT, type TipKey } from '../services/rational'
 
@@ -30,9 +31,29 @@ interface AppState {
   dismissRationalTip: () => void
 }
 
+/** U-18：记住上次查看的彩种，刷新页面后不再退回双色球 */
+const LOTTERY_KEY = 'lap:activeLottery'
+
+function readSavedLottery(): string {
+  try {
+    const saved = localStorage.getItem(LOTTERY_KEY)
+    if (saved && enabledLotteries.some((l) => l.id === saved)) return saved
+  } catch {
+    /* 隐私模式下 localStorage 不可用，忽略 */
+  }
+  return 'ssq'
+}
+
 export const useStore = create<AppState>((set) => ({
-  activeLotteryId: 'ssq',
-  setActiveLottery: (id) => set({ activeLotteryId: id }),
+  activeLotteryId: readSavedLottery(),
+  setActiveLottery: (id) => {
+    try {
+      localStorage.setItem(LOTTERY_KEY, id)
+    } catch {
+      /* 忽略写入失败 */
+    }
+    set({ activeLotteryId: id })
+  },
   syncPhase: 'idle',
   syncMessage: '',
   setSync: (phase, message = '') => set({ syncPhase: phase, syncMessage: message }),
