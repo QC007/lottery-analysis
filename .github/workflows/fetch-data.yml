@@ -20,6 +20,8 @@ permissions:
 jobs:
   fetch:
     runs-on: ubuntu-latest
+    outputs:
+      sha: ${{ steps.commit.outputs.sha }}
     steps:
       - uses: actions/checkout@v4
 
@@ -33,6 +35,7 @@ jobs:
           ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.backfill == 'true' && '--backfill' || '' }}
 
       - name: 提交数据变更
+        id: commit
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
@@ -43,6 +46,8 @@ jobs:
             git commit -m "data: 更新开奖数据 [skip ci]"
             git push
           fi
+          # 输出提交后真实 HEAD：可复用工作流的 checkout 默认取调用方 SHA（不含本次数据提交）
+          echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
 
       - name: 抓取失败时创建 Issue 告警
         if: failure()
@@ -70,3 +75,6 @@ jobs:
       pages: write
       id-token: write
     uses: ./.github/workflows/deploy-pages.yml
+    with:
+      # 必须传提交后的 HEAD：workflow_call 默认 checkout 触发时的 SHA，会漏掉刚推送的数据
+      ref: ${{ needs.fetch.outputs.sha }}

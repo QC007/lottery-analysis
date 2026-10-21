@@ -5,6 +5,12 @@ name: deploy-pages
 on:
   workflow_dispatch:
   workflow_call: # U-18：供 fetch-data 在数据更新后同一次 run 内调用（GITHUB_TOKEN 的 push 不会触发其他 workflow）
+    inputs:
+      ref:
+        description: '要构建部署的提交；留空则用触发本次运行的 SHA'
+        type: string
+        required: false
+        default: ''
   push:
     branches: [main]
     paths-ignore:
@@ -24,6 +30,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          # U-18：workflow_call 默认取调用方 SHA，会漏掉 fetch 刚推送的数据提交
+          ref: ${{ inputs.ref || github.sha }}
       - uses: actions/setup-node@v4
         with:
           node-version: 22
